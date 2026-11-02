@@ -2,6 +2,7 @@ import 'package:buku555/models/category.dart';
 import 'package:flutter/material.dart';
 
 class DropDownCategory extends StatelessWidget {
+  final List<Category> categories;
   final Category? selected;
   final ValueChanged<Category?> onChanged;
 
@@ -9,6 +10,7 @@ class DropDownCategory extends StatelessWidget {
     super.key,
     required this.selected,
     required this.onChanged,
+    required this.categories,
   });
 
   @override
@@ -31,22 +33,20 @@ class DropDownCategory extends StatelessWidget {
               vertical: 14,
             ),
           ),
-          hint: const Text('Select category'),
-          items: kCategories.map((cat) {
-            return DropdownMenuItem<Category>(
-              value: cat,
-              child: Row(
-                children: [
-                  Icon(cat.icon, color: cat.color, size: 20),
-                  const SizedBox(width: 10),
-                  Text(cat.name),
-                ],
+          items: [
+            for (final cat in categories)
+              DropdownMenuItem(
+                value: cat,
+                child: Row(
+                  children: [
+                    Icon(cat.icon, color: cat.color, size: 20),
+                    const SizedBox(width: 10),
+                    Text(cat.name),
+                  ],
+                ),
               ),
-            );
-          }).toList(),
+          ],
           onChanged: onChanged,
-          validator: (value) =>
-              value == null ? 'Please select a category' : null,
         ),
       ],
     );
