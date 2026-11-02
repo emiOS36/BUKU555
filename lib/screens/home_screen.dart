@@ -14,6 +14,7 @@ class HomeScreen extends StatefulWidget {
 
 class HomeScreenState extends State<HomeScreen> {
   List<db_model.Transaction> _recentTransactions = [];
+  List<db_model.Transaction> _allTransactions = [];
   bool _isLoading = true;
   String? _errorMessage;
 
@@ -32,6 +33,7 @@ class HomeScreenState extends State<HomeScreen> {
     });
 
     try {
+      final allTransactions = await TransactionDatabase.instance.getAll();
       final transactions = await TransactionDatabase.instance.getRecent(
         limit: 10,
       );
@@ -39,6 +41,7 @@ class HomeScreenState extends State<HomeScreen> {
       if (!mounted) return;
 
       setState(() {
+        _allTransactions = allTransactions;
         _recentTransactions = transactions;
         _isLoading = false;
       });
@@ -55,11 +58,32 @@ class HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.sizeOf(context);
+    final now = DateTime.now();
 
-    // These totals are still hard-coded, as they are in your current screen.
-    final int income = 1050000;
-    final int expenses = 500000;
-    final int totalBalance = income - expenses;
+    final currentMonthTransactions = _allTransactions.where((transaction) {
+      return transaction.date.year == now.year &&
+          transaction.date.month == now.month;
+    });
+
+    final income = currentMonthTransactions
+        .where(
+          (transaction) => transaction.type == db_model.TransactionType.income,
+        )
+        .fold<int>(
+          0,
+          (total, transaction) => total + transaction.amountInCents,
+        );
+
+    final expenses = currentMonthTransactions
+        .where(
+          (transaction) => transaction.type == db_model.TransactionType.expense,
+        )
+        .fold<int>(
+          0,
+          (total, transaction) => total + transaction.amountInCents,
+        );
+
+    final totalBalance = income - expenses;
     const String changeText = '+12% from last month';
 
     return Scaffold(
@@ -222,7 +246,7 @@ class _RecentTransactionRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isIncome = transaction.type == db_model.TransactionType.income;
-    // final color = _categoryColor(transaction.category, isIncome);
+    final color = _categoryColor(transaction.category, isIncome);
     final icon = _categoryIcon(transaction.category, isIncome);
     final sign = isIncome ? '+' : '-';
 
@@ -235,7 +259,7 @@ class _RecentTransactionRow extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 25,
-            backgroundColor: Colors.grey,
+            backgroundColor: color,
             child: Icon(icon, color: Colors.white, size: 24),
           ),
           const SizedBox(width: 12),
@@ -337,6 +361,10 @@ class _RecentTransactionRow extends StatelessWidget {
       default:
         return isIncome ? Icons.arrow_upward : Icons.more_horiz;
     }
+  }
+
+  Color _categoryColor(String category, bool isIncome) {
+    return isIncome ? Colors.green : Colors.red;
   }
 
   // Color _categoryColor(String category, bool isIncome) {
