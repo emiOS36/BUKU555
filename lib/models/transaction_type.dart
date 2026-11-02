@@ -9,7 +9,7 @@ enum TransactionType {
   income(
     label: 'Income',
     color: Colors.teal,
-    descriptionHint: 'e.g. Salary, Freelance',
+    descriptionHint: 'e.g. Salary, Bonus',
   );
 
   const TransactionType({

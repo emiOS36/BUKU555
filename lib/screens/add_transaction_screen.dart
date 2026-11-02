@@ -5,6 +5,8 @@ import 'package:buku555/widgets/drop_down_category.dart';
 import 'package:buku555/widgets/label_text_field.dart';
 import 'package:buku555/widgets/pill_toggle.dart';
 import 'package:flutter/material.dart';
+import 'package:buku555/data/transaction_database.dart';
+import 'package:buku555/models/transaction.dart' as db_model;
 
 class AddTransactionScreen extends StatefulWidget {
   const AddTransactionScreen({super.key});
@@ -28,6 +30,58 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     _descriptionController.dispose();
     _notesController.dispose();
     super.dispose();
+  }
+
+  Future<void> _saveTransaction() async {
+    final amount = double.tryParse(_amountController.text.trim());
+
+    if (amount == null || amount <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Enter an amount greater than zero')),
+      );
+      return;
+    }
+
+    final description = _descriptionController.text.trim();
+    if (description.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Enter a description')),
+      );
+      return;
+    }
+
+    final category = _selectedCategory;
+    if (category == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Choose a category')),
+      );
+      return;
+    }
+
+    final transaction = db_model.Transaction(
+      type: _type == TransactionType.income
+          ? db_model.TransactionType.income
+          : db_model.TransactionType.expense,
+      amountInCents: (amount * 100).round(),
+      description: description,
+      category: category.name,
+      date: _selectedDate ?? DateTime.now(),
+      notes: _notesController.text.trim().isEmpty
+          ? null
+          : _notesController.text.trim(),
+    );
+
+    try {
+      await TransactionDatabase.instance.insert(transaction);
+
+      if (!mounted) return;
+      Navigator.pop(context, true);
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not save transaction: $error')),
+      );
+    }
   }
 
   void _onTypeChanged(TransactionType type) {
@@ -111,7 +165,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  onPressed: () {},
+                  onPressed: _saveTransaction,
+
                   child: Text(
                     'Save ${_type.label}',
                     style: const TextStyle(
