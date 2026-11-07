@@ -55,9 +55,15 @@ class DatePickerField extends StatelessWidget {
           readOnly: true,
           onTap: () => _pickDate(context),
           decoration: InputDecoration(
+            filled: true,
+            fillColor: Color.fromARGB(255, 245, 246, 248),
             hintText: 'Select Date',
             suffixIcon: const Icon(Icons.calendar_today),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 14,
+            ),
           ),
           validator: (_) => selectedDate == null ? 'Please select date' : null,
         ),

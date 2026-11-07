@@ -27,6 +27,8 @@ class DropDownCategory extends StatelessWidget {
           initialValue: selected,
           isExpanded: true,
           decoration: InputDecoration(
+            filled: true,
+            fillColor: const Color.fromARGB(255, 245, 246, 248),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 12,

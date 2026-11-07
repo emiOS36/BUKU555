@@ -15,6 +15,7 @@ class Buku555 extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: .fromSeed(seedColor: Colors.teal),
+        scaffoldBackgroundColor: const Color.fromARGB(255, 255, 255, 255),
       ),
       home: NavigationScreen(),
     );
