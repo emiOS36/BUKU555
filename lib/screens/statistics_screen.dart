@@ -193,15 +193,6 @@ class StatisticsScreenState extends State<StatisticsScreen> {
     ];
   }
 
-  List<int> get _cumulativeWeeklyTotals {
-    var runningTotal = 0;
-
-    return _weeklyTotals.map((weeklyTotal) {
-      runningTotal += weeklyTotal;
-      return runningTotal;
-    }).toList();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -536,8 +527,8 @@ class StatisticsScreenState extends State<StatisticsScreen> {
   }
 
   Widget _buildTrendCard() {
-    final cumulativeTotals = _cumulativeWeeklyTotals;
-    final chartValues = cumulativeTotals.map((amount) => amount / 100).toList();
+    final weeklyTotals = _weeklyTotals;
+    final chartValues = weeklyTotals.map((amount) => amount / 100).toList();
     final chartMax = _chartMaximum(chartValues);
 
     return _StatisticsCard(
@@ -551,13 +542,13 @@ class StatisticsScreenState extends State<StatisticsScreen> {
           const SizedBox(height: 18),
           SizedBox(
             height: 170,
-            child: cumulativeTotals.every((amount) => amount == 0)
+            child: weeklyTotals.every((amount) => amount == 0)
                 ? const _ChartEmptyState()
                 : LineChart(
                     LineChartData(
                       minY: 0,
                       maxY: chartMax,
-                      maxX: (cumulativeTotals.length - 1).toDouble(),
+                      maxX: (weeklyTotals.length - 1).toDouble(),
                       gridData: FlGridData(
                         show: true,
                         drawVerticalLine: false,
@@ -605,7 +596,7 @@ class StatisticsScreenState extends State<StatisticsScreen> {
                               final weekIndex = value.toInt();
 
                               if (weekIndex < 0 ||
-                                  weekIndex >= cumulativeTotals.length) {
+                                  weekIndex >= weeklyTotals.length) {
                                 return const SizedBox.shrink();
                               }
 
@@ -625,15 +616,15 @@ class StatisticsScreenState extends State<StatisticsScreen> {
                           spots: [
                             for (
                               var index = 0;
-                              index < cumulativeTotals.length;
+                              index < weeklyTotals.length;
                               index++
                             )
                               FlSpot(
                                 index.toDouble(),
-                                cumulativeTotals[index] / 100,
+                                weeklyTotals[index] / 100,
                               ),
                           ],
-                          isCurved: true,
+                          isCurved: false,
                           color: Colors.teal,
                           barWidth: 3,
                           dotData: const FlDotData(show: true),
