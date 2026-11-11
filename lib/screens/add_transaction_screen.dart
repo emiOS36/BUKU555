@@ -9,7 +9,12 @@ import 'package:buku555/data/transaction_database.dart';
 import 'package:buku555/models/transaction.dart' as db_model;
 
 class AddTransactionScreen extends StatefulWidget {
-  const AddTransactionScreen({super.key});
+  final db_model.Transaction? transaction;
+
+  const AddTransactionScreen({
+    super.key,
+    this.transaction,
+  });
 
   @override
   State<AddTransactionScreen> createState() => _AddTransactionScreenState();
@@ -23,6 +28,28 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   TransactionType _type = TransactionType.expense;
   late Category? _selectedCategory = _type.defaultCategory;
   DateTime? _selectedDate = DateTime.now();
+
+  @override
+  void initState() {
+    super.initState();
+
+    final existing = widget.transaction;
+    if (existing == null) return;
+
+    _type = existing.type == db_model.TransactionType.income
+        ? TransactionType.income
+        : TransactionType.expense;
+
+    _selectedCategory = _type.categories.firstWhere(
+      (category) => category.name == existing.category,
+      orElse: () => _type.defaultCategory,
+    );
+
+    _amountController.text = (existing.amountInCents / 100).toStringAsFixed(2);
+    _descriptionController.text = existing.description;
+    _notesController.text = existing.notes ?? '';
+    _selectedDate = existing.date;
+  }
 
   @override
   void dispose() {
@@ -59,6 +86,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     }
 
     final transaction = db_model.Transaction(
+      id: widget.transaction?.id,
       type: _type == TransactionType.income
           ? db_model.TransactionType.income
           : db_model.TransactionType.expense,
@@ -72,7 +100,17 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     );
 
     try {
-      await TransactionDatabase.instance.insert(transaction);
+      if (widget.transaction == null) {
+        await TransactionDatabase.instance.insert(transaction);
+      } else {
+        final updatedRows = await TransactionDatabase.instance.update(
+          transaction,
+        );
+
+        if (updatedRows == 0) {
+          throw StateError('The transaction could not be found.');
+        }
+      }
 
       if (!mounted) return;
       Navigator.pop(context, true);
@@ -96,9 +134,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Add Transaction',
-          style: TextStyle(fontWeight: .w500),
+        title: Text(
+          widget.transaction == null ? 'Add Transaction' : 'Edit Transaction',
+          style: const TextStyle(fontWeight: FontWeight.w500),
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, size: 20),
@@ -168,7 +206,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   onPressed: _saveTransaction,
 
                   child: Text(
-                    'Save ${_type.label}',
+                    widget.transaction == null
+                        ? 'Save ${_type.label}'
+                        : 'Update ${_type.label}',
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,

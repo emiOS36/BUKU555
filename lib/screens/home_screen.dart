@@ -55,6 +55,32 @@ class HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  int _balanceForMonth(int year, int month) {
+    final monthTransactions = _allTransactions.where((transaction) {
+      return transaction.date.year == year && transaction.date.month == month;
+    });
+
+    final income = monthTransactions
+        .where(
+          (transaction) => transaction.type == db_model.TransactionType.income,
+        )
+        .fold<int>(
+          0,
+          (total, transaction) => total + transaction.amountInCents,
+        );
+
+    final expenses = monthTransactions
+        .where(
+          (transaction) => transaction.type == db_model.TransactionType.expense,
+        )
+        .fold<int>(
+          0,
+          (total, transaction) => total + transaction.amountInCents,
+        );
+
+    return income - expenses;
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.sizeOf(context);
@@ -84,8 +110,35 @@ class HomeScreenState extends State<HomeScreen> {
         );
 
     final totalBalance = income - expenses;
-    const String changeText = '+12% from last month';
+    final previousMonth = DateTime(now.year, now.month - 1);
+    final previousMonthBalance = _balanceForMonth(
+      previousMonth.year,
+      previousMonth.month,
+    );
 
+    late final String changeText;
+    late final IconData changeIcon;
+
+    if (previousMonthBalance == 0) {
+      // A percentage can't be calculated when last month's balance was zero.
+      changeText = totalBalance == 0
+          ? 'No change from last month'
+          : 'No comparison from last month';
+      changeIcon = Icons.trending_flat;
+    } else {
+      final percentChange =
+          ((totalBalance - previousMonthBalance) / previousMonthBalance.abs()) *
+          100;
+
+      final sign = percentChange > 0 ? '+' : '';
+      changeText = '$sign${percentChange.toStringAsFixed(1)}% from last month';
+
+      changeIcon = percentChange > 0
+          ? Icons.arrow_upward
+          : percentChange < 0
+          ? Icons.arrow_downward
+          : Icons.trending_flat;
+    }
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
@@ -155,8 +208,8 @@ class HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 15),
                   Row(
                     children: [
-                      const Icon(
-                        Icons.arrow_upward,
+                      Icon(
+                        changeIcon,
                         color: Colors.white,
                         size: 14,
                       ),

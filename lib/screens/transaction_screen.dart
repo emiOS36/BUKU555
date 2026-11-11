@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:buku555/screens/add_transaction_screen.dart';
 import 'package:buku555/data/transaction_database.dart';
 import 'package:buku555/models/category.dart';
 import 'package:buku555/models/transaction.dart' as db_model;
@@ -481,12 +481,30 @@ class TransactionScreenState extends State<TransactionScreen> {
           borderRadius: BorderRadius.circular(14),
         ),
         child: ListTile(
+          onTap: () async {
+            final updated = await Navigator.push<bool>(
+              context,
+              MaterialPageRoute<bool>(
+                fullscreenDialog: true,
+                builder: (context) => AddTransactionScreen(
+                  transaction: transaction,
+                ),
+              ),
+            );
+
+            if (updated == true) {
+              await reload();
+            }
+          },
+
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 12,
             vertical: 4,
           ),
+
+          // Keep your existing leading, title, subtitle, and trailing widgets.
           leading: CircleAvatar(
-            backgroundColor: category.color,
+            backgroundColor: isIncome ? Colors.green : Colors.red,
             child: Icon(category.icon, color: Colors.white),
           ),
           title: Text(
