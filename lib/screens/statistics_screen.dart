@@ -335,7 +335,7 @@ class StatisticsScreenState extends State<StatisticsScreen> {
             formatRM(_totalCents),
             style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 17),
           SizedBox(
             height: 180,
             child: weeklyTotals.every((amount) => amount == 0)
@@ -355,7 +355,7 @@ class StatisticsScreenState extends State<StatisticsScreen> {
                               BarChartRodData(
                                 toY: weeklyTotals[index] / 100,
                                 width: 18,
-                                color: _showIncome ? Colors.teal : Colors.red,
+                                color: _showIncome ? Colors.green : Colors.red,
                                 borderRadius: BorderRadius.circular(5),
                               ),
                             ],
@@ -548,7 +548,7 @@ class StatisticsScreenState extends State<StatisticsScreen> {
             'Recent Trend',
             style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 18),
           SizedBox(
             height: 170,
             child: cumulativeTotals.every((amount) => amount == 0)
@@ -561,6 +561,17 @@ class StatisticsScreenState extends State<StatisticsScreen> {
                       gridData: FlGridData(
                         show: true,
                         drawVerticalLine: false,
+                        horizontalInterval: chartMax / 4,
+                      ),
+                      extraLinesData: ExtraLinesData(
+                        horizontalLines: [
+                          HorizontalLine(
+                            y: chartMax,
+                            color: Colors.blueGrey.withValues(alpha: 0.35),
+                            strokeWidth: 1,
+                            dashArray: [6, 4],
+                          ),
+                        ],
                       ),
                       borderData: FlBorderData(show: false),
                       titlesData: FlTitlesData(
