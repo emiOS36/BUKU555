@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:buku555/data/transaction_database.dart';
 import 'package:buku555/models/transaction_kind.dart';
 import 'package:buku555/models/transaction.dart' as db_model;
+import 'package:buku555/data/currency_preferences.dart';
 
 class AddTransactionScreen extends StatefulWidget {
   final db_model.Transaction? transaction;
@@ -185,7 +186,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               const SizedBox(height: 20),
               LabelTextField(
                 label: 'Amount',
-                hintText: 'RM 0.00',
+                hintText:
+                    '${CurrencyPreferences.instance.current.value.symbol} 0.00',
                 controller: _amountController,
               ),
               const SizedBox(height: 10),

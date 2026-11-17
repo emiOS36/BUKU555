@@ -1,12 +1,15 @@
-//turns sen into text eg 350000 -> RM 3500.00
-String formatRM(int sen) {
-  final sign = sen < 0 ? '-' : '';
-  final abs = sen.abs();
-  final ringgit = abs ~/ 100;
-  final cents = (abs % 100).toString().padLeft(2, '0');
-  final withCommas = ringgit.toString().replaceAllMapped(
+import '../models/app_currency.dart';
+
+String formatCurrency(int amountInCents, AppCurrency currency) {
+  final sign = amountInCents < 0 ? '-' : '';
+  final absoluteAmount = amountInCents.abs();
+  final wholeAmount = absoluteAmount ~/ 100;
+  final cents = (absoluteAmount % 100).toString().padLeft(2, '0');
+
+  final amountWithCommas = wholeAmount.toString().replaceAllMapped(
     RegExp(r'\B(?=(\d{3})+(?!\d))'),
     (match) => ',',
   );
-  return '${sign}RM $withCommas.$cents';
+
+  return '$sign${currency.symbol} $amountWithCommas.$cents';
 }

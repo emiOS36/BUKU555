@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:buku555/data/currency_preferences.dart';
+import 'package:buku555/data/transaction_database.dart';
+import 'package:buku555/models/app_currency.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -9,6 +12,59 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _notificationEnable = true;
+
+  Future<void> _chooseCurrency() async {
+    final transactions = await TransactionDatabase.instance.getAll();
+
+    if (!mounted) return;
+
+    // Existing transactions are assumed to use the current currency.
+    // Changing it here would relabel their amounts without converting them.
+    if (transactions.isNotEmpty) {
+      await showDialog<void>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Currency can’t be changed'),
+          content: const Text(
+            'This ledger already has transactions in its current currency.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    final currentCurrency = CurrencyPreferences.instance.current.value;
+
+    final selectedCurrency = await showDialog<AppCurrency>(
+      context: context,
+      builder: (dialogContext) => SimpleDialog(
+        title: const Text('Choose currency'),
+        children: [
+          for (final currency in AppCurrency.values)
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(dialogContext, currency),
+              child: Row(
+                children: [
+                  Expanded(child: Text(currency.label)),
+                  if (currency == currentCurrency)
+                    const Icon(Icons.check, color: Colors.teal),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+
+    if (!mounted || selectedCurrency == null) return;
+
+    await CurrencyPreferences.instance.save(selectedCurrency);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,10 +84,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _SettingsSection(
               title: 'Account & App',
               rows: [
-                _SettingsRow(
-                  icon: Icons.currency_exchange,
-                  title: 'Currency',
-                  value: 'RM (MYR)',
+                ValueListenableBuilder<AppCurrency>(
+                  valueListenable: CurrencyPreferences.instance.current,
+                  builder: (context, currency, child) {
+                    return _SettingsRow(
+                      icon: Icons.currency_exchange,
+                      title: 'Currency',
+                      value: currency.label,
+                      onTap: _chooseCurrency,
+                    );
+                  },
                 ),
                 _SettingsRow(
                   icon: Icons.brightness_6_outlined,
@@ -169,6 +231,7 @@ class _SettingsRow extends StatelessWidget {
     this.value,
     this.trailing,
     this.showChevron = true,
+    this.onTap,
   });
 
   final IconData icon;
@@ -176,41 +239,45 @@ class _SettingsRow extends StatelessWidget {
   final String? value;
   final Widget? trailing;
   final bool showChevron;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 58,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Row(
-          children: [
-            Icon(icon, size: 22),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Text(
-                title,
-                style: const TextStyle(fontSize: 16),
-              ),
-            ),
-            if (value != null) ...[
-              Text(
-                value!,
-                style: TextStyle(
-                  fontSize: 15,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+    return InkWell(
+      onTap: onTap,
+      child: SizedBox(
+        height: 58,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              Icon(icon, size: 22),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(fontSize: 16),
                 ),
               ),
-              const SizedBox(width: 8),
+              if (value != null) ...[
+                Text(
+                  value!,
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(width: 8),
+              ],
+              if (trailing != null)
+                trailing!
+              else if (showChevron)
+                Icon(
+                  Icons.chevron_right,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
             ],
-            if (trailing != null)
-              trailing!
-            else if (showChevron)
-              Icon(
-                Icons.chevron_right,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-          ],
+          ),
         ),
       ),
     );

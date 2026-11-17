@@ -1,7 +1,7 @@
 import 'package:buku555/data/transaction_database.dart';
 import 'package:buku555/models/transaction.dart' as db_model;
-import 'package:buku555/screens/reusable_card.dart';
-import 'package:buku555/utils/money_formatter.dart';
+import 'package:buku555/widgets/currency_amount.dart';
+import 'package:buku555/widgets/reusable_card.dart';
 import 'package:buku555/widgets/circle_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:buku555/models/transaction_kind.dart';
@@ -128,7 +128,7 @@ class HomeScreenState extends State<HomeScreen> {
       changeText = totalBalance == 0
           ? 'No change from last month'
           : 'No comparison from last month';
-      changeIcon = Icons.trending_flat;
+      changeIcon = Icons.remove;
     } else {
       final percentChange =
           ((totalBalance - previousMonthBalance) / previousMonthBalance.abs()) *
@@ -201,8 +201,8 @@ class HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    formatRM(totalBalance),
+                  CurrencyAmount(
+                    amountInCents: totalBalance,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 25,
@@ -308,7 +308,7 @@ class _RecentTransactionRow extends StatelessWidget {
     final sign = isIncome ? '+' : '-';
 
     // amountInCents is stored as cents; formatRM displays it as Ringgit.
-    final amount = formatRM(transaction.amountInCents);
+    // final amount = formatRM(transaction.amountInCents);
 
     return SizedBox(
       height: 72,
@@ -345,8 +345,9 @@ class _RecentTransactionRow extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          Text(
-            '$sign $amount',
+          CurrencyAmount(
+            amountInCents: transaction.amountInCents,
+            prefix: sign,
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
@@ -423,19 +424,4 @@ class _RecentTransactionRow extends StatelessWidget {
   Color _categoryColor(String category, bool isIncome) {
     return isIncome ? Colors.green : Colors.red;
   }
-
-  // Color _categoryColor(String category, bool isIncome) {
-  //   switch (category.toLowerCase()) {
-  //     case 'food & beverage':
-  //       return Colors.deepOrange;
-  //     case 'grocery':
-  //       return Colors.green;
-  //     case 'shopping':
-  //       return Colors.purple;
-  //     case 'utilities':
-  //       return Colors.pinkAccent;
-  //     default:
-  //       return isIncome ? Colors.green : Colors.teal;
-  //   }
-  // }
 }

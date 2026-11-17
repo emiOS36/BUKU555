@@ -54,7 +54,6 @@ Financial accuracy is essential.
 
 - Store transaction amounts as integer cents in `amountInCents`; do not use `double` as the authoritative money value.
 - Keep calculations in integer cents. When a calculation needs rounding, define the rounding behavior explicitly.
-- Use `formatRM` from `lib/utils/money_formatter.dart` to display Malaysian Ringgit. Formatting must never change the stored amount.
 - Keep transaction types, categories, and model mapping consistent with `lib/models/transaction.dart` and the existing database schema.
 - Prevent invalid values, missing IDs, and accidental double-counting when adding, editing, deleting, or summarizing transactions.
 - Use consistent calendar boundaries for reports: include the start date and exclude the end date (`[start, end)`). Be clear whether a period means a calendar month/year, a rolling range, or a completed period.

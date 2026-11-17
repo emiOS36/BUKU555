@@ -3,8 +3,8 @@ import 'package:buku555/screens/add_transaction_screen.dart';
 import 'package:buku555/data/transaction_database.dart';
 import 'package:buku555/models/category.dart';
 import 'package:buku555/models/transaction.dart' as db_model;
-import 'package:buku555/screens/reusable_card.dart';
-import 'package:buku555/utils/money_formatter.dart';
+import 'package:buku555/widgets/reusable_card.dart';
+import 'package:buku555/widgets/currency_amount.dart';
 import 'package:buku555/widgets/circle_icon.dart';
 import 'package:buku555/widgets/pill_toggle.dart';
 import 'package:buku555/models/transaction_kind.dart';
@@ -460,7 +460,6 @@ class TransactionScreenState extends State<TransactionScreen> {
   Widget _buildTransactionRow(db_model.Transaction transaction) {
     final isIncome = transaction.type == TransactionType.income;
     final category = _findCategory(transaction.category);
-    final amount = formatRM(transaction.amountInCents);
 
     return Dismissible(
       key: ValueKey(transaction.id),
@@ -526,8 +525,9 @@ class TransactionScreenState extends State<TransactionScreen> {
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                '${isIncome ? '+' : '-'}$amount',
+              CurrencyAmount(
+                amountInCents: transaction.amountInCents,
+                prefix: isIncome ? '+' : '-',
                 style: TextStyle(
                   color: isIncome ? Colors.green[800] : Colors.red,
                   fontWeight: FontWeight.w600,

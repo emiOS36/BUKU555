@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:buku555/utils/money_formatter.dart';
+import 'package:buku555/widgets/currency_amount.dart';
 
 class ReusableCard extends StatelessWidget {
   final Widget icon;
@@ -46,9 +46,12 @@ class ReusableCard extends StatelessWidget {
                 style: TextStyle(fontSize: 15, fontWeight: .w500),
               ),
               SizedBox(height: 1),
-              Text(
-                formatRM(amount),
-                style: TextStyle(fontSize: 15, fontWeight: .bold),
+              CurrencyAmount(
+                amountInCents: amount,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),

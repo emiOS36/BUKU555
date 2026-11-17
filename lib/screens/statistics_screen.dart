@@ -1,11 +1,11 @@
 import 'dart:math' as math;
 import 'package:buku555/utils/chart_formatter.dart';
+import 'package:buku555/widgets/currency_amount.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:buku555/models/transaction_kind.dart';
 import 'package:buku555/data/transaction_database.dart';
 import 'package:buku555/models/transaction.dart' as db_model;
-import 'package:buku555/utils/money_formatter.dart';
 import 'package:buku555/widgets/pill_toggle.dart';
 
 enum _StatisticsTab { expenses, income }
@@ -306,9 +306,13 @@ class StatisticsScreenState extends State<StatisticsScreen> {
             style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 4),
-          Text(
-            formatRM(_totalCents),
-            style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+          CurrencyAmount(
+            amountInCents: _totalCents,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 25,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 17),
           SizedBox(
