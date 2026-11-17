@@ -22,7 +22,7 @@ class ReusableCard extends StatelessWidget {
       width: screenSize.width * 0.45,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: .circular(10),
         boxShadow: [
           BoxShadow(

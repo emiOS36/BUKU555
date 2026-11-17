@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:buku555/data/currency_preferences.dart';
 import 'package:buku555/data/transaction_database.dart';
 import 'package:buku555/models/app_currency.dart';
+import 'package:buku555/data/theme_preferences.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -66,6 +67,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await CurrencyPreferences.instance.save(selectedCurrency);
   }
 
+  String _themeLabel(ThemeMode mode) {
+    return switch (mode) {
+      ThemeMode.system => 'System',
+      ThemeMode.light => 'Light',
+      ThemeMode.dark => 'Dark',
+    };
+  }
+
+  Future<void> _chooseTheme() async {
+    final currentMode = ThemePreferences.instance.current.value;
+
+    final selectedMode = await showDialog<ThemeMode>(
+      context: context,
+      builder: (dialogContext) => SimpleDialog(
+        title: const Text('Choose app theme'),
+        children: [
+          for (final mode in ThemeMode.values)
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(dialogContext, mode),
+              child: Row(
+                children: [
+                  Expanded(child: Text(_themeLabel(mode))),
+                  if (mode == currentMode)
+                    const Icon(Icons.check, color: Colors.teal),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+
+    if (!mounted || selectedMode == null) return;
+
+    await ThemePreferences.instance.save(selectedMode);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -95,10 +132,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     );
                   },
                 ),
-                _SettingsRow(
-                  icon: Icons.brightness_6_outlined,
-                  title: 'App Theme',
-                  value: 'System',
+                ValueListenableBuilder<ThemeMode>(
+                  valueListenable: ThemePreferences.instance.current,
+                  builder: (context, mode, child) {
+                    return _SettingsRow(
+                      icon: Icons.brightness_6_outlined,
+                      title: 'App Theme',
+                      value: _themeLabel(mode),
+                      onTap: _chooseTheme,
+                    );
+                  },
                 ),
                 _SettingsRow(
                   icon: Icons.language_outlined,

@@ -40,7 +40,7 @@ class PillToggle<T> extends StatelessWidget {
       height: 50,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: Colors.grey.shade200,
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(30),
       ),
       child: Stack(
@@ -97,7 +97,10 @@ class _Segment extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isActive ? Colors.white : Colors.grey.shade600;
+    final colorScheme = Theme.of(context).colorScheme;
+    final color = isActive
+        ? colorScheme.onPrimary
+        : colorScheme.onSurfaceVariant;
 
     return Semantics(
       button: true,

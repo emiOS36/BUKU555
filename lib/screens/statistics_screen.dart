@@ -173,6 +173,8 @@ class StatisticsScreenState extends State<StatisticsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
@@ -203,15 +205,22 @@ class StatisticsScreenState extends State<StatisticsScreen> {
                   vertical: 9,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
+                  color: colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(22),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(_selectedPeriod.label),
+                    Text(
+                      _selectedPeriod.label,
+                      style: TextStyle(color: colorScheme.onSurface),
+                    ),
                     const SizedBox(width: 6),
-                    const Icon(Icons.keyboard_arrow_down, size: 20),
+                    Icon(
+                      Icons.keyboard_arrow_down,
+                      size: 20,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
                   ],
                 ),
               ),
