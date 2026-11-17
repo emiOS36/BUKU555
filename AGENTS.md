@@ -19,6 +19,14 @@ Preserve existing user changes. Keep changes focused on the request, and do not 
 - For questions, reviews, or advice, inspect files as needed and explain findings without modifying them.
 - When a code change is requested, keep it within the requested scope and preserve unrelated user changes.
 
+## Editing Permission
+
+Treat requests for explanations, examples, or code to copy as chat-only. Do not edit, create, format, or otherwise modify project files for those requests.
+
+Only change project files when I explicitly ask you to apply the change to the project—for example, “edit the project files,” “apply this to my code,” or “implement this in my project.”
+
+Words such as “make,” “build,” or “create” do not by themselves authorize file changes. If a request could mean either “show me the code” or “edit the project,” do not edit; provide the code in chat. If I explicitly ask for a project change, keep it within that request and report which files you changed.
+
 ## Project Structure
 
 Follow the existing organization:

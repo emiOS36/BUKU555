@@ -4,6 +4,7 @@ import 'package:buku555/screens/reusable_card.dart';
 import 'package:buku555/utils/money_formatter.dart';
 import 'package:buku555/widgets/circle_icon.dart';
 import 'package:flutter/material.dart';
+import 'package:buku555/models/transaction_kind.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -45,11 +46,14 @@ class HomeScreenState extends State<HomeScreen> {
         _recentTransactions = transactions;
         _isLoading = false;
       });
-    } catch (error) {
+    } catch (error, stackTrace) {
+      debugPrint('Could not load transactions: $error');
+      debugPrintStack(stackTrace: stackTrace);
+
       if (!mounted) return;
 
       setState(() {
-        _errorMessage = 'Could not load transactions: $error';
+        _errorMessage = 'Could not load transactions. Please try again.';
         _isLoading = false;
       });
     }
@@ -62,7 +66,7 @@ class HomeScreenState extends State<HomeScreen> {
 
     final income = monthTransactions
         .where(
-          (transaction) => transaction.type == db_model.TransactionType.income,
+          (transaction) => transaction.type == TransactionType.income,
         )
         .fold<int>(
           0,
@@ -71,7 +75,7 @@ class HomeScreenState extends State<HomeScreen> {
 
     final expenses = monthTransactions
         .where(
-          (transaction) => transaction.type == db_model.TransactionType.expense,
+          (transaction) => transaction.type == TransactionType.expense,
         )
         .fold<int>(
           0,
@@ -93,7 +97,7 @@ class HomeScreenState extends State<HomeScreen> {
 
     final income = currentMonthTransactions
         .where(
-          (transaction) => transaction.type == db_model.TransactionType.income,
+          (transaction) => transaction.type == TransactionType.income,
         )
         .fold<int>(
           0,
@@ -102,7 +106,7 @@ class HomeScreenState extends State<HomeScreen> {
 
     final expenses = currentMonthTransactions
         .where(
-          (transaction) => transaction.type == db_model.TransactionType.expense,
+          (transaction) => transaction.type == TransactionType.expense,
         )
         .fold<int>(
           0,
@@ -298,7 +302,7 @@ class _RecentTransactionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isIncome = transaction.type == db_model.TransactionType.income;
+    final isIncome = transaction.type == TransactionType.income;
     final color = _categoryColor(transaction.category, isIncome);
     final icon = _categoryIcon(transaction.category, isIncome);
     final sign = isIncome ? '+' : '-';

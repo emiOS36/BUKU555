@@ -2,7 +2,7 @@ import 'dart:math' as math;
 import 'package:buku555/utils/chart_formatter.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-
+import 'package:buku555/models/transaction_kind.dart';
 import 'package:buku555/data/transaction_database.dart';
 import 'package:buku555/models/transaction.dart' as db_model;
 import 'package:buku555/utils/money_formatter.dart';
@@ -107,9 +107,7 @@ class StatisticsScreenState extends State<StatisticsScreen> {
   bool get _showIncome => _selectedTab == _StatisticsTab.income;
 
   List<db_model.Transaction> get _chartTransactions {
-    final type = _showIncome
-        ? db_model.TransactionType.income
-        : db_model.TransactionType.expense;
+    final type = _showIncome ? TransactionType.income : TransactionType.expense;
 
     return _periodTransactions
         .where((transaction) => transaction.type == type)
@@ -136,26 +134,6 @@ class StatisticsScreenState extends State<StatisticsScreen> {
     final totals = List<int>.filled(weekCount, 0);
 
     for (final transaction in _chartTransactions) {
-      final weekIndex = (transaction.date.day - 1) ~/ 7;
-      totals[weekIndex] += transaction.amountInCents;
-    }
-
-    return totals;
-  }
-
-  List<int> _weeklyTotalsFor(db_model.TransactionType type) {
-    final range = _periodRange;
-    final daysInMonth = DateTime(
-      range.start.year,
-      range.start.month + 1,
-      0,
-    ).day;
-    final weekCount = (daysInMonth + 6) ~/ 7;
-    final totals = List<int>.filled(weekCount, 0);
-
-    for (final transaction in _periodTransactions) {
-      if (transaction.type != type) continue;
-
       final weekIndex = (transaction.date.day - 1) ~/ 7;
       totals[weekIndex] += transaction.amountInCents;
     }
@@ -311,6 +289,12 @@ class StatisticsScreenState extends State<StatisticsScreen> {
     final chartMax = _chartMaximum(
       weeklyTotals.map((amount) => amount / 100).toList(),
     );
+    final range = _periodRange;
+    final daysInMonth = DateTime(
+      range.start.year,
+      range.start.month + 1,
+      0,
+    ).day;
     final title = _showIncome ? 'Income by Week' : 'Expenses by Week';
 
     return _StatisticsCard(
@@ -401,10 +385,16 @@ class StatisticsScreenState extends State<StatisticsScreen> {
                                 return const SizedBox.shrink();
                               }
 
+                              final firstDay = week * 7 + 1;
+                              final lastDay = math.min(
+                                firstDay + 6,
+                                daysInMonth,
+                              );
+
                               return SideTitleWidget(
                                 meta: meta,
                                 child: Text(
-                                  'W${week + 1}',
+                                  '$firstDay–$lastDay',
                                   style: const TextStyle(fontSize: 11),
                                 ),
                               );
@@ -530,6 +520,12 @@ class StatisticsScreenState extends State<StatisticsScreen> {
     final weeklyTotals = _weeklyTotals;
     final chartValues = weeklyTotals.map((amount) => amount / 100).toList();
     final chartMax = _chartMaximum(chartValues);
+    final range = _periodRange;
+    final daysInMonth = DateTime(
+      range.start.year,
+      range.start.month + 1,
+      0,
+    ).day;
 
     return _StatisticsCard(
       child: Column(
@@ -603,7 +599,7 @@ class StatisticsScreenState extends State<StatisticsScreen> {
                               return SideTitleWidget(
                                 meta: meta,
                                 child: Text(
-                                  'W${weekIndex + 1}',
+                                  '${weekIndex * 7 + 1}–${math.min(weekIndex * 7 + 7, daysInMonth)}',
                                   style: const TextStyle(fontSize: 11),
                                 ),
                               );

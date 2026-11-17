@@ -1,5 +1,5 @@
-import 'package:buku555/models/transaction_type.dart';
 import 'package:flutter/material.dart';
+import 'package:buku555/models/transaction_kind.dart';
 
 class Category {
   final String name;

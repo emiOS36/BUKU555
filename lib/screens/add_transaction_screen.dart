@@ -6,6 +6,7 @@ import 'package:buku555/widgets/label_text_field.dart';
 import 'package:buku555/widgets/pill_toggle.dart';
 import 'package:flutter/material.dart';
 import 'package:buku555/data/transaction_database.dart';
+import 'package:buku555/models/transaction_kind.dart';
 import 'package:buku555/models/transaction.dart' as db_model;
 
 class AddTransactionScreen extends StatefulWidget {
@@ -36,9 +37,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     final existing = widget.transaction;
     if (existing == null) return;
 
-    _type = existing.type == db_model.TransactionType.income
-        ? TransactionType.income
-        : TransactionType.expense;
+    _type = existing.type;
 
     _selectedCategory = _type.categories.firstWhere(
       (category) => category.name == existing.category,
@@ -59,12 +58,31 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     super.dispose();
   }
 
-  Future<void> _saveTransaction() async {
-    final amount = double.tryParse(_amountController.text.trim());
+  int? _parseAmountInCents(String input) {
+    final value = input.trim();
 
-    if (amount == null || amount <= 0) {
+    // Accept whole Ringgit or up to two decimal places.
+    if (!RegExp(r'^\d+(?:\.\d{1,2})?$').hasMatch(value)) {
+      return null;
+    }
+
+    final parts = value.split('.');
+    final ringgit = int.tryParse(parts[0]);
+    if (ringgit == null) return null;
+
+    final cents = parts.length == 1 ? 0 : int.parse(parts[1].padRight(2, '0'));
+
+    return ringgit * 100 + cents;
+  }
+
+  Future<void> _saveTransaction() async {
+    final amountInCents = _parseAmountInCents(_amountController.text);
+
+    if (amountInCents == null || amountInCents <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Enter an amount greater than zero')),
+        const SnackBar(
+          content: Text('Enter a valid amount greater than zero'),
+        ),
       );
       return;
     }
@@ -87,10 +105,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
     final transaction = db_model.Transaction(
       id: widget.transaction?.id,
-      type: _type == TransactionType.income
-          ? db_model.TransactionType.income
-          : db_model.TransactionType.expense,
-      amountInCents: (amount * 100).round(),
+      type: _type,
+      amountInCents: amountInCents,
       description: description,
       category: category.name,
       date: _selectedDate ?? DateTime.now(),
@@ -114,10 +130,15 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
       if (!mounted) return;
       Navigator.pop(context, true);
-    } catch (error) {
+    } catch (error, stackTrace) {
+      debugPrint('Could not save transaction: $error');
+      debugPrintStack(stackTrace: stackTrace);
+
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not save transaction: $error')),
+        const SnackBar(
+          content: Text('Could not save transaction. Please try again.'),
+        ),
       );
     }
   }

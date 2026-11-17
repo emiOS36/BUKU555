@@ -7,6 +7,7 @@ import 'package:buku555/screens/reusable_card.dart';
 import 'package:buku555/utils/money_formatter.dart';
 import 'package:buku555/widgets/circle_icon.dart';
 import 'package:buku555/widgets/pill_toggle.dart';
+import 'package:buku555/models/transaction_kind.dart';
 
 class TransactionScreen extends StatefulWidget {
   const TransactionScreen({super.key});
@@ -24,6 +25,7 @@ class TransactionScreenState extends State<TransactionScreen> {
   String? _errorMessage;
 
   bool _isSearching = false;
+  int _filterRequestId = 0;
   String _searchQuery = '';
   String _selectedType = 'All';
   DateTimeRange? _selectedDateRange;
@@ -81,10 +83,12 @@ class TransactionScreenState extends State<TransactionScreen> {
   }
 
   Future<void> _refreshVisibleTransactions() async {
+    final requestId = ++_filterRequestId;
+
     try {
       final transactions = await _queryVisibleTransactions();
 
-      if (!mounted) return;
+      if (!mounted || requestId != _filterRequestId) return;
 
       setState(() {
         _visibleTransactions = transactions;
@@ -94,7 +98,7 @@ class TransactionScreenState extends State<TransactionScreen> {
       debugPrint('Could not filter transactions: $error');
       debugPrintStack(stackTrace: stackTrace);
 
-      if (!mounted) return;
+      if (!mounted || requestId != _filterRequestId) return;
 
       setState(() {
         _errorMessage = 'Could not filter transactions. Please try again.';
@@ -227,7 +231,7 @@ class TransactionScreenState extends State<TransactionScreen> {
 
     final income = transactionsInSummaryPeriod
         .where(
-          (transaction) => transaction.type == db_model.TransactionType.income,
+          (transaction) => transaction.type == TransactionType.income,
         )
         .fold<int>(
           0,
@@ -236,7 +240,7 @@ class TransactionScreenState extends State<TransactionScreen> {
 
     final expenses = transactionsInSummaryPeriod
         .where(
-          (transaction) => transaction.type == db_model.TransactionType.expense,
+          (transaction) => transaction.type == TransactionType.expense,
         )
         .fold<int>(
           0,
@@ -454,7 +458,7 @@ class TransactionScreenState extends State<TransactionScreen> {
   }
 
   Widget _buildTransactionRow(db_model.Transaction transaction) {
-    final isIncome = transaction.type == db_model.TransactionType.income;
+    final isIncome = transaction.type == TransactionType.income;
     final category = _findCategory(transaction.category);
     final amount = formatRM(transaction.amountInCents);
 

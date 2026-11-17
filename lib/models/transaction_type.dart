@@ -1,24 +1,17 @@
 import 'package:flutter/material.dart';
 
-enum TransactionType {
-  expense(
-    label: 'Expense',
-    color: Colors.teal,
-    descriptionHint: 'e.g. Lunch, Shopping',
-  ),
-  income(
-    label: 'Income',
-    color: Colors.teal,
-    descriptionHint: 'e.g. Salary, Bonus',
-  );
+import 'transaction_kind.dart';
 
-  const TransactionType({
-    required this.label,
-    required this.color,
-    required this.descriptionHint,
-  });
+extension TransactionTypePresentation on TransactionType {
+  String get label => switch (this) {
+    TransactionType.expense => 'Expense',
+    TransactionType.income => 'Income',
+  };
 
-  final String label;
-  final Color color;
-  final String descriptionHint;
+  Color get color => Colors.teal;
+
+  String get descriptionHint => switch (this) {
+    TransactionType.expense => 'e.g. Lunch, Shopping',
+    TransactionType.income => 'e.g. Salary, Bonus',
+  };
 }
