@@ -1,12 +1,11 @@
 import 'package:buku555/screens/navigation_screen.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:buku555/data/currency_preferences.dart';
 import 'package:buku555/data/theme_preferences.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await CurrencyPreferences.instance.load();
   await CurrencyPreferences.instance.load();
   await ThemePreferences.instance.load();
 

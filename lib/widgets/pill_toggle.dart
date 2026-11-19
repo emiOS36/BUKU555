@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class PillToggleOption<T> {
   final T value;
@@ -56,7 +56,7 @@ class PillToggle<T> extends StatelessWidget {
               child: AnimatedContainer(
                 duration: _duration,
                 decoration: BoxDecoration(
-                  color: options[selectedIndex].color,
+                  color: Theme.of(context).colorScheme.primary,
                   borderRadius: BorderRadius.circular(26),
                 ),
               ),

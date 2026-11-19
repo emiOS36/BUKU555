@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:buku555/widgets/currency_amount.dart';
 
 class ReusableCard extends StatelessWidget {
@@ -15,18 +15,16 @@ class ReusableCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Size screenSize = MediaQuery.sizeOf(context);
-
     return Container(
-      height: screenSize.height * 0.09,
-      width: screenSize.width * 0.45,
-      padding: const EdgeInsets.all(20),
+      width: double.infinity,
+      constraints: const BoxConstraints(minHeight: 85),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: .circular(10),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.9),
+            color: Colors.grey.withValues(alpha: 0.4),
             blurRadius: 8,
             spreadRadius: 0,
             offset: const Offset(0, 3),

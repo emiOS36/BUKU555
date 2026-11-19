@@ -3,7 +3,7 @@ import 'package:buku555/models/transaction.dart' as db_model;
 import 'package:buku555/widgets/currency_amount.dart';
 import 'package:buku555/widgets/reusable_card.dart';
 import 'package:buku555/widgets/circle_icon.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:buku555/models/transaction_kind.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -87,7 +87,6 @@ class HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.sizeOf(context);
     final now = DateTime.now();
 
     final currentMonthTransactions = _allTransactions.where((transaction) {
@@ -169,7 +168,7 @@ class HomeScreenState extends State<HomeScreen> {
           children: [
             Container(
               width: double.infinity,
-              height: screenSize.height * 0.15,
+              constraints: const BoxConstraints(minHeight: 140),
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
@@ -234,22 +233,26 @@ class HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 15),
             Row(
               children: [
-                ReusableCard(
-                  icon: const CircleIcon(
-                    icon: Icons.arrow_upward,
-                    color: Colors.green,
+                Expanded(
+                  child: ReusableCard(
+                    icon: const CircleIcon(
+                      icon: Icons.arrow_upward,
+                      color: Colors.green,
+                    ),
+                    type: 'Income',
+                    amount: income,
                   ),
-                  type: 'Income',
-                  amount: income,
                 ),
-                const SizedBox(width: 14),
-                ReusableCard(
-                  icon: const CircleIcon(
-                    icon: Icons.arrow_downward,
-                    color: Colors.red,
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ReusableCard(
+                    icon: const CircleIcon(
+                      icon: Icons.arrow_downward,
+                      color: Colors.red,
+                    ),
+                    type: 'Expenses',
+                    amount: expenses,
                   ),
-                  type: 'Expenses',
-                  amount: expenses,
                 ),
               ],
             ),

@@ -4,7 +4,7 @@ import 'package:buku555/widgets/date_picker_field.dart';
 import 'package:buku555/widgets/drop_down_category.dart';
 import 'package:buku555/widgets/label_text_field.dart';
 import 'package:buku555/widgets/pill_toggle.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:buku555/data/transaction_database.dart';
 import 'package:buku555/models/transaction_kind.dart';
 import 'package:buku555/models/transaction.dart' as db_model;

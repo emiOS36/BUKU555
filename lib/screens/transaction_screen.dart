@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:buku555/screens/add_transaction_screen.dart';
 import 'package:buku555/data/transaction_database.dart';
 import 'package:buku555/models/category.dart';
@@ -316,7 +316,7 @@ class TransactionScreenState extends State<TransactionScreen> {
                     amount: income,
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 8),
                 Expanded(
                   child: ReusableCard(
                     icon: const CircleIcon(
@@ -339,21 +339,21 @@ class TransactionScreenState extends State<TransactionScreen> {
 
                 await _refreshVisibleTransactions();
               },
-              options: const [
+              options: [
                 PillToggleOption(
                   value: 'All',
                   label: 'All',
-                  color: Colors.teal,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
                 PillToggleOption(
                   value: 'Income',
                   label: 'Income',
-                  color: Colors.teal,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
                 PillToggleOption(
                   value: 'Expense',
                   label: 'Expense',
-                  color: Colors.teal,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
               ],
             ),

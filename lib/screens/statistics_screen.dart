@@ -2,7 +2,7 @@ import 'dart:math' as math;
 import 'package:buku555/utils/chart_formatter.dart';
 import 'package:buku555/widgets/currency_amount.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:buku555/models/transaction_kind.dart';
 import 'package:buku555/data/transaction_database.dart';
 import 'package:buku555/models/transaction.dart' as db_model;
@@ -287,7 +287,7 @@ class StatisticsScreenState extends State<StatisticsScreen> {
           PillToggleOption(
             value: tab,
             label: tab.tabLabel,
-            color: Colors.teal,
+            color: Theme.of(context).colorScheme.primary,
           ),
       ],
     );
@@ -317,8 +317,8 @@ class StatisticsScreenState extends State<StatisticsScreen> {
           const SizedBox(height: 4),
           CurrencyAmount(
             amountInCents: _totalCents,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
               fontSize: 25,
               fontWeight: FontWeight.bold,
             ),
@@ -634,7 +634,7 @@ class StatisticsScreenState extends State<StatisticsScreen> {
                               ),
                           ],
                           isCurved: false,
-                          color: Colors.teal,
+                          color: Theme.of(context).colorScheme.primary,
                           barWidth: 3,
                           dotData: const FlDotData(show: true),
                           belowBarData: BarAreaData(
