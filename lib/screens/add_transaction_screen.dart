@@ -189,6 +189,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 hintText:
                     '${CurrencyPreferences.instance.current.value.symbol} 0.00',
                 controller: _amountController,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
               ),
               const SizedBox(height: 10),
               LabelTextField(
@@ -210,7 +213,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               ),
               const SizedBox(height: 10),
               LabelTextField(
-                label: 'Notes (optional)',
+                label: 'Notes',
                 hintText: 'Add a note...',
                 controller: _notesController,
               ),

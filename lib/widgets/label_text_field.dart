@@ -4,12 +4,14 @@ class LabelTextField extends StatelessWidget {
   final String label;
   final String hintText;
   final TextEditingController controller;
+  final TextInputType keyboardType;
 
   const LabelTextField({
     super.key,
     required this.label,
     required this.hintText,
     required this.controller,
+    this.keyboardType = TextInputType.text,
   });
 
   @override
@@ -24,6 +26,7 @@ class LabelTextField extends StatelessWidget {
         SizedBox(height: 5),
         TextField(
           controller: controller,
+          keyboardType: keyboardType,
           style: TextStyle(fontSize: 15),
           decoration: InputDecoration(
             filled: true,

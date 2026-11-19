@@ -25,9 +25,9 @@ class ReusableCard extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withValues(alpha: 0.4),
-            blurRadius: 8,
+            blurRadius: 2,
             spreadRadius: 0,
-            offset: const Offset(0, 3),
+            offset: const Offset(3, 5),
           ),
         ],
       ),

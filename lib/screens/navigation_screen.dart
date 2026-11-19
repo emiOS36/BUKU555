@@ -136,8 +136,8 @@ class _NavigationScreenState extends State<NavigationScreen> {
               child: AnimatedSlide(
                 offset: index == _selectedIndex
                     ? Offset.zero
-                    : const Offset(0, 0.025),
-                duration: const Duration(milliseconds: 220),
+                    : const Offset(0, 0.05),
+                duration: const Duration(milliseconds: 1220),
                 curve: Curves.easeOutCubic,
                 child: AnimatedOpacity(
                   opacity: index == _selectedIndex ? 1 : 0,

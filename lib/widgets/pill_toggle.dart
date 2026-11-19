@@ -30,6 +30,7 @@ class PillToggle<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     final selectedIndex = options.indexWhere((o) => o.value == selected);
     assert(selectedIndex != -1, 'selected value is not in options');
 
@@ -40,7 +41,7 @@ class PillToggle<T> extends StatelessWidget {
       height: 50,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        color: Color.lerp(scheme.surface, scheme.primary, 0.05)!,
         borderRadius: BorderRadius.circular(30),
       ),
       child: Stack(
