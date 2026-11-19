@@ -310,9 +310,6 @@ class _RecentTransactionRow extends StatelessWidget {
     final icon = _categoryIcon(transaction.category, isIncome);
     final sign = isIncome ? '+' : '-';
 
-    // amountInCents is stored as cents; formatRM displays it as Ringgit.
-    // final amount = formatRM(transaction.amountInCents);
-
     return SizedBox(
       height: 72,
       child: Row(
@@ -339,7 +336,7 @@ class _RecentTransactionRow extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${transaction.category} • ${_formatDate(transaction.date)}',
+                  '${transaction.notes} • ${_formatDate(transaction.date)}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontSize: 13, color: Colors.grey[700]),

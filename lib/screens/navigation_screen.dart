@@ -129,9 +129,34 @@ class _NavigationScreenState extends State<NavigationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: _screens,
+      body: Stack(
+        children: [
+          for (var index = 0; index < _screens.length; index++)
+            Positioned.fill(
+              child: AnimatedSlide(
+                offset: index == _selectedIndex
+                    ? Offset.zero
+                    : const Offset(0, 0.025),
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOutCubic,
+                child: AnimatedOpacity(
+                  opacity: index == _selectedIndex ? 1 : 0,
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOutCubic,
+                  child: IgnorePointer(
+                    ignoring: index != _selectedIndex,
+                    child: ExcludeSemantics(
+                      excluding: index != _selectedIndex,
+                      child: TickerMode(
+                        enabled: index == _selectedIndex,
+                        child: _screens[index],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         shape: const CircleBorder(),

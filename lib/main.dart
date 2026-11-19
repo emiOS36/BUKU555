@@ -26,15 +26,15 @@ class Buku555 extends StatelessWidget {
           theme: ThemeData(
             useMaterial3: true,
             colorScheme: ColorScheme.fromSeed(
-              seedColor: Colors.teal,
+              seedColor: const Color(0xFFF3F6F4),
               brightness: Brightness.light,
             ),
-            scaffoldBackgroundColor: Colors.white,
+            scaffoldBackgroundColor: const Color(0xFFF3F6F4),
           ),
           darkTheme: ThemeData(
             useMaterial3: true,
             colorScheme: ColorScheme.fromSeed(
-              seedColor: Colors.teal,
+              seedColor: const Color(0xFFF3F6F4),
               brightness: Brightness.dark,
             ),
           ),

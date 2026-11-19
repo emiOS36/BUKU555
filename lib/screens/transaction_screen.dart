@@ -488,7 +488,7 @@ class TransactionScreenState extends State<TransactionScreen> {
             final updated = await Navigator.push<bool>(
               context,
               MaterialPageRoute<bool>(
-                fullscreenDialog: true,
+                fullscreenDialog: false,
                 builder: (context) => AddTransactionScreen(
                   transaction: transaction,
                 ),
@@ -517,8 +517,8 @@ class TransactionScreenState extends State<TransactionScreen> {
             style: const TextStyle(fontWeight: FontWeight.w600),
           ),
           subtitle: Text(
-            '${transaction.category} • '
-            '${_transactionTimeOrDate(transaction.date)}',
+            '${transaction.notes}',
+            // '${_transactionTimeOrDate(transaction.date)}',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -572,23 +572,23 @@ class TransactionScreenState extends State<TransactionScreen> {
     return _formatFullDate(date);
   }
 
-  String _transactionTimeOrDate(DateTime date) {
-    final hasTime = date.hour != 0 || date.minute != 0;
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final day = DateTime(date.year, date.month, date.day);
-    final isTodayOrYesterday =
-        day == today || day == today.subtract(const Duration(days: 1));
+  // String _transactionTimeOrDate(DateTime date) {
+  //   final hasTime = date.hour != 0 || date.minute != 0;
+  //   final now = DateTime.now();
+  //   final today = DateTime(now.year, now.month, now.day);
+  //   final day = DateTime(date.year, date.month, date.day);
+  //   final isTodayOrYesterday =
+  //       day == today || day == today.subtract(const Duration(days: 1));
 
-    if (hasTime && isTodayOrYesterday) {
-      final hour = date.hour % 12 == 0 ? 12 : date.hour % 12;
-      final minute = date.minute.toString().padLeft(2, '0');
-      final suffix = date.hour >= 12 ? 'PM' : 'AM';
-      return '$hour:$minute $suffix';
-    }
+  //   if (hasTime && isTodayOrYesterday) {
+  //     final hour = date.hour % 12 == 0 ? 12 : date.hour % 12;
+  //     final minute = date.minute.toString().padLeft(2, '0');
+  //     final suffix = date.hour >= 12 ? 'PM' : 'AM';
+  //     return '$hour:$minute $suffix';
+  //   }
 
-    return _formatDayMonth(date);
-  }
+  //   return _formatDayMonth(date);
+  // }
 
   String _formatDayMonth(DateTime date) {
     return '${date.day} ${_monthName(date.month)}';
