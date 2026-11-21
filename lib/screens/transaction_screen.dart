@@ -115,10 +115,22 @@ class TransactionScreenState extends State<TransactionScreen> {
       return;
     }
     try {
-      // Ask SQLite to delete the transaction with this ID.
-      await TransactionDatabase.instance.delete(id);
-      // Read the database again to update what the screen shows.
+      final deletedRows = await TransactionDatabase.instance.delete(id);
+
+      if (deletedRows == 0) {
+        throw StateError('The transaction was not found.');
+      }
+
       await reload();
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          behavior: SnackBarBehavior.floating,
+          content: Text('Transaction deleted successfully'),
+        ),
+      );
     } catch (error, stackTrace) {
       // These details are for debug console.
       debugPrint('Could not delete transaction: $error');
@@ -133,6 +145,7 @@ class TransactionScreenState extends State<TransactionScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
+          behavior: SnackBarBehavior.floating,
           content: Text('Could not delete transaction. Please try again.'),
         ),
       );
@@ -497,6 +510,17 @@ class TransactionScreenState extends State<TransactionScreen> {
 
             if (updated == true) {
               await reload();
+
+              if (!mounted) return;
+
+              ScaffoldMessenger.of(context)
+                ..hideCurrentSnackBar()
+                ..showSnackBar(
+                  const SnackBar(
+                    behavior: SnackBarBehavior.floating,
+                    content: Text('Transaction updated successfully'),
+                  ),
+                );
             }
           },
 

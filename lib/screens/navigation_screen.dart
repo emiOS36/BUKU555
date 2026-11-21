@@ -1,12 +1,25 @@
-import 'dart:async';
-
+import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
-
 import 'package:buku555/screens/add_transaction_screen.dart';
 import 'package:buku555/screens/home_screen.dart';
 import 'package:buku555/screens/settings_screen.dart';
 import 'package:buku555/screens/statistics_screen.dart';
 import 'package:buku555/screens/transaction_screen.dart';
+
+class _LowerCenterDockedFabLocation extends FloatingActionButtonLocation {
+  const _LowerCenterDockedFabLocation(this.offsetY);
+
+  final double offsetY;
+
+  @override
+  Offset getOffset(ScaffoldPrelayoutGeometry geometry) {
+    final centerDocked = FloatingActionButtonLocation.centerDocked.getOffset(
+      geometry,
+    );
+
+    return centerDocked + Offset(0, offsetY);
+  }
+}
 
 class NavigationScreen extends StatefulWidget {
   const NavigationScreen({super.key});
@@ -17,9 +30,6 @@ class NavigationScreen extends StatefulWidget {
 
 class _NavigationScreenState extends State<NavigationScreen> {
   int _selectedIndex = 0;
-
-  OverlayEntry? _savedMessageEntry;
-  Timer? _savedMessageTimer;
 
   final GlobalKey<HomeScreenState> _homeScreenKey =
       GlobalKey<HomeScreenState>();
@@ -43,10 +53,21 @@ class _NavigationScreenState extends State<NavigationScreen> {
       ),
     );
 
+    // Run after AddTransactionScreen has closed.
+    FocusManager.instance.primaryFocus?.unfocus();
+    await SystemChannels.textInput.invokeMethod<void>('TextInput.hide');
+
     if (!mounted) return;
 
     if (saved == true) {
-      _showSavedMessage();
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            behavior: SnackBarBehavior.floating,
+            content: Text('Transaction added successfully'),
+          ),
+        );
       _homeScreenKey.currentState?.reloadRecentTransactions();
       _transactionScreenKey.currentState?.reload();
     }
@@ -62,68 +83,62 @@ class _NavigationScreenState extends State<NavigationScreen> {
     }
   }
 
-  void _showSavedMessage() {
-    _savedMessageTimer?.cancel();
-    _savedMessageEntry?.remove();
+  Widget _buildNavItem({
+    required int index,
+    required IconData icon,
+    required IconData selectedIcon,
+    required String label,
+  }) {
+    final isSelected = _selectedIndex == index;
+    final colors = Theme.of(context).colorScheme;
 
-    _savedMessageEntry = OverlayEntry(
-      builder: (overlayContext) {
-        final topInset = MediaQuery.paddingOf(overlayContext).top;
-
-        return Positioned(
-          top: topInset + kToolbarHeight + 8,
-          left: 16,
-          right: 16,
-          child: Material(
-            color: Colors.transparent,
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 14,
+    return Expanded(
+      child: InkWell(
+        onTap: () => _onTabSelected(index),
+        borderRadius: BorderRadius.circular(24),
+        splashFactory: NoSplash.splashFactory,
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        hoverColor: Colors.transparent,
+        focusColor: Colors.transparent,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 2),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 60,
+                height: 32,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? colors.secondaryContainer
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: Icon(
+                  isSelected ? selectedIcon : icon,
+                  size: 24,
+                  color: isSelected
+                      ? colors.onSecondaryContainer
+                      : colors.onSurfaceVariant,
+                ),
               ),
-              decoration: BoxDecoration(
-                color: Color.fromARGB(255, 45, 52, 54),
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 8,
-                    offset: Offset(0, 3),
-                  ),
-                ],
+              const SizedBox(height: 2),
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: colors.onSurfaceVariant,
+                ),
               ),
-              child: const Row(
-                children: [
-                  Icon(Icons.check_circle, color: Colors.white),
-                  SizedBox(width: 10),
-                  Text(
-                    'Transaction saved',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            ],
           ),
-        );
-      },
+        ),
+      ),
     );
-
-    Overlay.of(context).insert(_savedMessageEntry!);
-
-    _savedMessageTimer = Timer(const Duration(seconds: 3), () {
-      _savedMessageEntry?.remove();
-      _savedMessageEntry = null;
-    });
-  }
-
-  @override
-  void dispose() {
-    _savedMessageTimer?.cancel();
-    _savedMessageEntry?.remove();
-    super.dispose();
   }
 
   @override
@@ -158,39 +173,53 @@ class _NavigationScreenState extends State<NavigationScreen> {
             ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        shape: const CircleBorder(),
-        foregroundColor: Colors.black54,
-        backgroundColor: Colors.teal[100],
-        onPressed: _openAddTransactionScreen,
-        child: const Icon(Icons.add),
+      floatingActionButton: SizedBox.square(
+        dimension: 46,
+        child: FloatingActionButton(
+          shape: const CircleBorder(),
+          foregroundColor: Colors.black54,
+          backgroundColor: Colors.teal[100],
+          onPressed: _openAddTransactionScreen,
+          child: const Icon(Icons.add, size: 32),
+        ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: _onTabSelected,
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: 'Home',
+      floatingActionButtonLocation: const _LowerCenterDockedFabLocation(35),
+      bottomNavigationBar: BottomAppBar(
+        shape: const CircularNotchedRectangle(),
+        notchMargin: 8,
+        color: Theme.of(context).colorScheme.surfaceContainerLow,
+        child: SizedBox(
+          height: 72,
+          child: Row(
+            children: [
+              _buildNavItem(
+                index: 0,
+                icon: Icons.home_outlined,
+                selectedIcon: Icons.home,
+                label: 'Home',
+              ),
+              _buildNavItem(
+                index: 1,
+                icon: Icons.receipt_outlined,
+                selectedIcon: Icons.receipt,
+                label: 'Transactions',
+              ),
+              const SizedBox(width: 64),
+              _buildNavItem(
+                index: 2,
+                icon: Icons.bar_chart_outlined,
+                selectedIcon: Icons.bar_chart,
+                label: 'Statistics',
+              ),
+              _buildNavItem(
+                index: 3,
+                icon: Icons.settings_outlined,
+                selectedIcon: Icons.settings,
+                label: 'Settings',
+              ),
+            ],
           ),
-          NavigationDestination(
-            icon: Icon(Icons.receipt_outlined),
-            selectedIcon: Icon(Icons.receipt),
-            label: 'Transactions',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.bar_chart_outlined),
-            selectedIcon: Icon(Icons.bar_chart),
-            label: 'Statistics',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.settings_outlined),
-            selectedIcon: Icon(Icons.settings),
-            label: 'Settings',
-          ),
-        ],
+        ),
       ),
     );
   }

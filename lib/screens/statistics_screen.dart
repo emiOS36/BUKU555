@@ -7,15 +7,18 @@ import 'package:buku555/models/transaction_kind.dart';
 import 'package:buku555/data/transaction_database.dart';
 import 'package:buku555/models/transaction.dart' as db_model;
 import 'package:buku555/widgets/pill_toggle.dart';
+import 'package:buku555/data/currency_preferences.dart';
+import 'package:buku555/utils/money_formatter.dart';
 
 enum _StatisticsTab { expenses, income }
 
-enum _StatisticsPeriod { thisMonth, lastMonth }
+enum _StatisticsPeriod { thisMonth, lastMonth, last12Months }
 
 extension on _StatisticsPeriod {
   String get label => switch (this) {
     _StatisticsPeriod.thisMonth => 'This Month',
     _StatisticsPeriod.lastMonth => 'Last Month',
+    _StatisticsPeriod.last12Months => 'Last 12 Months',
   };
 }
 
@@ -80,19 +83,26 @@ class StatisticsScreenState extends State<StatisticsScreen> {
   DateTimeRange get _periodRange {
     final now = DateTime.now();
 
-    if (_selectedPeriod == _StatisticsPeriod.thisMonth) {
-      return DateTimeRange(
-        start: DateTime(now.year, now.month),
-        end: DateTime(now.year, now.month + 1),
-      );
+    switch (_selectedPeriod) {
+      case _StatisticsPeriod.thisMonth:
+        return DateTimeRange(
+          start: DateTime(now.year, now.month),
+          end: DateTime(now.year, now.month + 1),
+        );
+
+      case _StatisticsPeriod.lastMonth:
+        final previousMonth = DateTime(now.year, now.month - 1);
+        return DateTimeRange(
+          start: DateTime(previousMonth.year, previousMonth.month),
+          end: DateTime(previousMonth.year, previousMonth.month + 1),
+        );
+
+      case _StatisticsPeriod.last12Months:
+        return DateTimeRange(
+          start: DateTime(now.year, now.month - 11),
+          end: DateTime(now.year, now.month + 1),
+        );
     }
-
-    final previousMonth = DateTime(now.year, now.month - 1);
-
-    return DateTimeRange(
-      start: DateTime(previousMonth.year, previousMonth.month),
-      end: DateTime(previousMonth.year, previousMonth.month + 1),
-    );
   }
 
   List<db_model.Transaction> get _periodTransactions {
@@ -141,6 +151,67 @@ class StatisticsScreenState extends State<StatisticsScreen> {
     return totals;
   }
 
+  List<int> get _monthlyTotals {
+    final range = _periodRange;
+    final totals = List<int>.filled(12, 0);
+
+    for (final transaction in _chartTransactions) {
+      final monthIndex =
+          (transaction.date.year - range.start.year) * 12 +
+          transaction.date.month -
+          range.start.month;
+
+      if (monthIndex >= 0 && monthIndex < totals.length) {
+        totals[monthIndex] += transaction.amountInCents;
+      }
+    }
+
+    return totals;
+  }
+
+  List<int> get _chartTotals {
+    return _selectedPeriod == _StatisticsPeriod.last12Months
+        ? _monthlyTotals
+        : _weeklyTotals;
+  }
+
+  String _chartLabel(int index) {
+    if (_selectedPeriod != _StatisticsPeriod.last12Months) {
+      final firstDay = index * 7 + 1;
+      final range = _periodRange;
+      final daysInMonth = DateTime(
+        range.start.year,
+        range.start.month + 1,
+        0,
+      ).day;
+      final lastDay = math.min(firstDay + 6, daysInMonth);
+
+      return '$firstDay–$lastDay';
+    }
+
+    final month = DateTime(
+      _periodRange.start.year,
+      _periodRange.start.month + index,
+    );
+
+    const monthNames = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+
+    return monthNames[month.month - 1];
+  }
+
   List<MapEntry<String, int>> get _categoryBreakdown {
     final totals = <String, int>{};
 
@@ -155,20 +226,7 @@ class StatisticsScreenState extends State<StatisticsScreen> {
     final sorted = totals.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
 
-    if (sorted.length <= 5) return sorted;
-
-    final topCategories = sorted.take(4).toList();
-    final otherAmount = sorted
-        .skip(4)
-        .fold<int>(
-          0,
-          (total, entry) => total + entry.value,
-        );
-
-    return [
-      ...topCategories,
-      MapEntry('Other categories', otherAmount),
-    ];
+    return sorted;
   }
 
   @override
@@ -206,7 +264,7 @@ class StatisticsScreenState extends State<StatisticsScreen> {
                 ),
                 decoration: BoxDecoration(
                   color: colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(22),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -294,17 +352,14 @@ class StatisticsScreenState extends State<StatisticsScreen> {
   }
 
   Widget _buildWeeklyChartCard() {
-    final weeklyTotals = _weeklyTotals;
+    final totals = _chartTotals;
     final chartMax = _chartMaximum(
-      weeklyTotals.map((amount) => amount / 100).toList(),
+      totals.map((amount) => amount / 100).toList(),
     );
-    final range = _periodRange;
-    final daysInMonth = DateTime(
-      range.start.year,
-      range.start.month + 1,
-      0,
-    ).day;
-    final title = _showIncome ? 'Income by Week' : 'Expenses by Week';
+
+    final title = _selectedPeriod == _StatisticsPeriod.last12Months
+        ? (_showIncome ? 'Income by Month' : 'Expenses by Month')
+        : (_showIncome ? 'Income by Week' : 'Expenses by Week');
 
     return _StatisticsCard(
       child: Column(
@@ -326,23 +381,38 @@ class StatisticsScreenState extends State<StatisticsScreen> {
           const SizedBox(height: 17),
           SizedBox(
             height: 180,
-            child: weeklyTotals.every((amount) => amount == 0)
+            child: totals.every((amount) => amount == 0)
                 ? const _ChartEmptyState()
                 : BarChart(
                     BarChartData(
+                      barTouchData: BarTouchData(
+                        touchTooltipData: BarTouchTooltipData(
+                          fitInsideHorizontally: true,
+                          fitInsideVertically: true,
+                          getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                            final amountInCents = totals[group.x];
+                            final currency =
+                                CurrencyPreferences.instance.current.value;
+
+                            return BarTooltipItem(
+                              formatCurrency(amountInCents, currency),
+                              const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
                       maxY: chartMax,
                       barGroups: [
-                        for (
-                          var index = 0;
-                          index < weeklyTotals.length;
-                          index++
-                        )
+                        for (var index = 0; index < totals.length; index++)
                           BarChartGroupData(
                             x: index,
                             barRods: [
                               BarChartRodData(
-                                toY: weeklyTotals[index] / 100,
-                                width: 18,
+                                toY: totals[index] / 100,
+                                width: 12,
                                 color: _showIncome ? Colors.green : Colors.red,
                                 borderRadius: BorderRadius.circular(5),
                               ),
@@ -351,6 +421,12 @@ class StatisticsScreenState extends State<StatisticsScreen> {
                       ],
                       extraLinesData: ExtraLinesData(
                         horizontalLines: [
+                          HorizontalLine(
+                            y: 0,
+                            color: Colors.blueGrey.withValues(alpha: 0.35),
+                            strokeWidth: 1,
+                            dashArray: [6, 4],
+                          ),
                           HorizontalLine(
                             y: chartMax,
                             color: Colors.blueGrey.withValues(alpha: 0.35),
@@ -391,23 +467,27 @@ class StatisticsScreenState extends State<StatisticsScreen> {
                         bottomTitles: AxisTitles(
                           sideTitles: SideTitles(
                             showTitles: true,
+                            interval:
+                                _selectedPeriod ==
+                                    _StatisticsPeriod.last12Months
+                                ? 2
+                                : 1,
                             getTitlesWidget: (value, meta) {
-                              final week = value.toInt();
+                              final index = value.toInt();
 
-                              if (week < 0 || week >= weeklyTotals.length) {
+                              if (index < 0 || index >= totals.length) {
                                 return const SizedBox.shrink();
                               }
-
-                              final firstDay = week * 7 + 1;
-                              final lastDay = math.min(
-                                firstDay + 6,
-                                daysInMonth,
-                              );
+                              if (_selectedPeriod ==
+                                      _StatisticsPeriod.last12Months &&
+                                  index.isEven) {
+                                return const SizedBox.shrink();
+                              }
 
                               return SideTitleWidget(
                                 meta: meta,
                                 child: Text(
-                                  '$firstDay–$lastDay',
+                                  _chartLabel(index),
                                   style: const TextStyle(fontSize: 11),
                                 ),
                               );
@@ -504,8 +584,9 @@ class StatisticsScreenState extends State<StatisticsScreen> {
         : (entry.value / _totalCents * 100).round();
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           CircleAvatar(
             radius: 5,
@@ -513,16 +594,31 @@ class StatisticsScreenState extends State<StatisticsScreen> {
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(
-              entry.key,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 13),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  entry.key,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 13, fontWeight: .w600),
+                ),
+                const SizedBox(height: 2),
+                CurrencyAmount(
+                  amountInCents: entry.value,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
             ),
           ),
+          const SizedBox(width: 8),
           Text(
             '$percentage%',
-            style: const TextStyle(fontSize: 13),
+            style: const TextStyle(fontSize: 13, fontWeight: .w500),
           ),
         ],
       ),
@@ -530,8 +626,8 @@ class StatisticsScreenState extends State<StatisticsScreen> {
   }
 
   Widget _buildTrendCard() {
-    final weeklyTotals = _weeklyTotals;
-    final chartValues = weeklyTotals.map((amount) => amount / 100).toList();
+    final totals = _chartTotals;
+    final chartValues = totals.map((amount) => amount / 100).toList();
     final chartMax = _chartMaximum(chartValues);
     final range = _periodRange;
     final daysInMonth = DateTime(
@@ -551,13 +647,40 @@ class StatisticsScreenState extends State<StatisticsScreen> {
           const SizedBox(height: 18),
           SizedBox(
             height: 170,
-            child: weeklyTotals.every((amount) => amount == 0)
+            child: totals.every((amount) => amount == 0)
                 ? const _ChartEmptyState()
                 : LineChart(
                     LineChartData(
+                      lineTouchData: LineTouchData(
+                        touchTooltipData: LineTouchTooltipData(
+                          fitInsideHorizontally: true,
+                          fitInsideVertically: true,
+                          getTooltipItems: (touchedSpots) {
+                            return touchedSpots.map((spot) {
+                              final index = spot.x.toInt();
+
+                              if (index < 0 || index >= totals.length) {
+                                return null;
+                              }
+
+                              final amountInCents = totals[index];
+                              final currency =
+                                  CurrencyPreferences.instance.current.value;
+
+                              return LineTooltipItem(
+                                formatCurrency(amountInCents, currency),
+                                const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              );
+                            }).toList();
+                          },
+                        ),
+                      ),
                       minY: 0,
                       maxY: chartMax,
-                      maxX: (weeklyTotals.length - 1).toDouble(),
+                      maxX: (totals.length - 1).toDouble(),
                       gridData: FlGridData(
                         show: true,
                         drawVerticalLine: false,
@@ -602,17 +725,22 @@ class StatisticsScreenState extends State<StatisticsScreen> {
                             showTitles: true,
                             interval: 1,
                             getTitlesWidget: (value, meta) {
-                              final weekIndex = value.toInt();
+                              final index = value.toInt();
 
-                              if (weekIndex < 0 ||
-                                  weekIndex >= weeklyTotals.length) {
+                              if (index < 0 || index >= totals.length) {
+                                return const SizedBox.shrink();
+                              }
+
+                              if (_selectedPeriod ==
+                                      _StatisticsPeriod.last12Months &&
+                                  index.isEven) {
                                 return const SizedBox.shrink();
                               }
 
                               return SideTitleWidget(
                                 meta: meta,
                                 child: Text(
-                                  '${weekIndex * 7 + 1}–${math.min(weekIndex * 7 + 7, daysInMonth)}',
+                                  _chartLabel(index),
                                   style: const TextStyle(fontSize: 11),
                                 ),
                               );
@@ -623,14 +751,10 @@ class StatisticsScreenState extends State<StatisticsScreen> {
                       lineBarsData: [
                         LineChartBarData(
                           spots: [
-                            for (
-                              var index = 0;
-                              index < weeklyTotals.length;
-                              index++
-                            )
+                            for (var index = 0; index < totals.length; index++)
                               FlSpot(
                                 index.toDouble(),
-                                weeklyTotals[index] / 100,
+                                totals[index] / 100,
                               ),
                           ],
                           isCurved: false,

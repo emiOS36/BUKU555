@@ -8,6 +8,7 @@ class Transaction {
   final String category;
   final DateTime date;
   final String? notes;
+  final String? receiptPath;
 
   const Transaction({
     this.id,
@@ -17,6 +18,7 @@ class Transaction {
     required this.category,
     required this.date,
     this.notes,
+    this.receiptPath,
   });
 
   Map<String, Object?> toMap() => {
@@ -27,6 +29,7 @@ class Transaction {
     'category': category,
     'date': date.toIso8601String(),
     'notes': notes,
+    'receipt_path': receiptPath,
   };
 
   factory Transaction.fromMap(Map<String, Object?> map) => Transaction(
@@ -37,5 +40,6 @@ class Transaction {
     category: map['category'] as String,
     date: DateTime.parse(map['date'] as String),
     notes: map['notes'] as String?,
+    receiptPath: map['receipt_path'] as String?,
   );
 }

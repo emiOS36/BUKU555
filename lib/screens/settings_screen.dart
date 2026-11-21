@@ -2,7 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:buku555/data/currency_preferences.dart';
 import 'package:buku555/data/transaction_database.dart';
 import 'package:buku555/models/app_currency.dart';
-import 'package:buku555/data/theme_preferences.dart';
+// import 'package:buku555/data/theme_preferences.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -12,7 +12,7 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  bool _notificationEnable = true;
+  // final bool _notificationEnable = true;
 
   Future<void> _chooseCurrency() async {
     final transactions = await TransactionDatabase.instance.getAll();
@@ -67,41 +67,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await CurrencyPreferences.instance.save(selectedCurrency);
   }
 
-  String _themeLabel(ThemeMode mode) {
-    return switch (mode) {
-      ThemeMode.system => 'System',
-      ThemeMode.light => 'Light',
-      ThemeMode.dark => 'Dark',
-    };
-  }
+  // String _themeLabel(ThemeMode mode) {
+  //   return switch (mode) {
+  //     ThemeMode.system => 'System',
+  //     ThemeMode.light => 'Light',
+  //     ThemeMode.dark => 'Dark',
+  //   };
+  // }
 
-  Future<void> _chooseTheme() async {
-    final currentMode = ThemePreferences.instance.current.value;
+  // Future<void> _chooseTheme() async {
+  //   final currentMode = ThemePreferences.instance.current.value;
 
-    final selectedMode = await showDialog<ThemeMode>(
-      context: context,
-      builder: (dialogContext) => SimpleDialog(
-        title: const Text('Choose app theme'),
-        children: [
-          for (final mode in ThemeMode.values)
-            SimpleDialogOption(
-              onPressed: () => Navigator.pop(dialogContext, mode),
-              child: Row(
-                children: [
-                  Expanded(child: Text(_themeLabel(mode))),
-                  if (mode == currentMode)
-                    const Icon(Icons.check, color: Colors.teal),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
+  //   final selectedMode = await showDialog<ThemeMode>(
+  //     context: context,
+  //     builder: (dialogContext) => SimpleDialog(
+  //       title: const Text('Choose app theme'),
+  //       children: [
+  //         for (final mode in ThemeMode.values)
+  //           SimpleDialogOption(
+  //             onPressed: () => Navigator.pop(dialogContext, mode),
+  //             child: Row(
+  //               children: [
+  //                 Expanded(child: Text(_themeLabel(mode))),
+  //                 if (mode == currentMode)
+  //                   const Icon(Icons.check, color: Colors.teal),
+  //               ],
+  //             ),
+  //           ),
+  //       ],
+  //     ),
+  //   );
 
-    if (!mounted || selectedMode == null) return;
+  //   if (!mounted || selectedMode == null) return;
 
-    await ThemePreferences.instance.save(selectedMode);
-  }
+  //   await ThemePreferences.instance.save(selectedMode);
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -132,51 +132,51 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     );
                   },
                 ),
-                ValueListenableBuilder<ThemeMode>(
-                  valueListenable: ThemePreferences.instance.current,
-                  builder: (context, mode, child) {
-                    return _SettingsRow(
-                      icon: Icons.brightness_6_outlined,
-                      title: 'App Theme',
-                      value: _themeLabel(mode),
-                      onTap: _chooseTheme,
-                    );
-                  },
-                ),
-                _SettingsRow(
-                  icon: Icons.language_outlined,
-                  title: 'Language',
-                  value: 'English',
-                ),
-                _SettingsRow(
-                  icon: Icons.notifications_none,
-                  title: 'Notification',
-                  showChevron: false,
-                  trailing: Switch(
-                    value: _notificationEnable,
-                    activeTrackColor: Colors.teal,
-                    onChanged: ((value) {
-                      setState(() {
-                        _notificationEnable = value;
-                      });
-                    }),
-                  ),
-                ),
+                // ValueListenableBuilder<ThemeMode>(
+                //   valueListenable: ThemePreferences.instance.current,
+                //   builder: (context, mode, child) {
+                //     return _SettingsRow(
+                //       icon: Icons.brightness_6_outlined,
+                //       title: 'App Theme',
+                //       value: _themeLabel(mode),
+                //       onTap: _chooseTheme,
+                //     );
+                //   },
+                // ),
+                // _SettingsRow(
+                //   icon: Icons.language_outlined,
+                //   title: 'Language',
+                //   value: 'English',
+                // ),
+                // _SettingsRow(
+                //   icon: Icons.notifications_none,
+                //   title: 'Notification',
+                //   showChevron: false,
+                //   trailing: Switch(
+                //     value: _notificationEnable,
+                //     activeTrackColor: Colors.teal,
+                //     onChanged: ((value) {
+                //       setState(() {
+                //         _notificationEnable = value;
+                //       });
+                //     }),
+                //   ),
+                // ),
               ],
             ),
             const SizedBox(height: 24),
             _SettingsSection(
               title: 'Data & Backup',
               rows: [
-                _SettingsRow(
+                const _SettingsRow(
                   icon: Icons.file_upload_outlined,
                   title: 'Export Data',
                 ),
-                _SettingsRow(
+                const _SettingsRow(
                   icon: Icons.file_download_outlined,
                   title: 'Import Data',
                 ),
-                _SettingsRow(
+                const _SettingsRow(
                   icon: Icons.cloud_outlined,
                   title: 'Cloud Sync',
                   value: 'Off',
@@ -187,11 +187,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _SettingsSection(
               title: 'Support',
               rows: [
-                _SettingsRow(
+                const _SettingsRow(
                   icon: Icons.help_outline,
                   title: 'Help',
                 ),
-                _SettingsRow(
+                const _SettingsRow(
                   icon: Icons.mail_outline,
                   title: 'Feedback',
                 ),
@@ -201,18 +201,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _SettingsSection(
               title: 'About',
               rows: [
-                _SettingsRow(
+                const _SettingsRow(
                   icon: Icons.info_outline,
                   title: 'App Version',
+                  value: 'v1.0.0',
+                  showChevron: false,
                 ),
-                const _SettingsRow(
-                  icon: Icons.privacy_tip_outlined,
-                  title: 'Privacy Policy',
-                ),
-                const _SettingsRow(
-                  icon: Icons.description_outlined,
-                  title: 'Terms of Service',
-                ),
+                // const _SettingsRow(
+                //   icon: Icons.privacy_tip_outlined,
+                //   title: 'Privacy Policy',
+                // ),
+                // const _SettingsRow(
+                //   icon: Icons.description_outlined,
+                //   title: 'Terms of Service',
+                // ),
               ],
             ),
           ],

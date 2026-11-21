@@ -9,7 +9,7 @@ class TransactionDatabase {
   static final TransactionDatabase instance = TransactionDatabase._();
 
   static const _databaseName = 'buku555.db';
-  static const _databaseVersion = 1;
+  static const _databaseVersion = 2;
   static const _tableName = 'transactions';
 
   Database? _database;
@@ -32,9 +32,17 @@ class TransactionDatabase {
             description TEXT NOT NULL,
             category TEXT NOT NULL,
             date TEXT NOT NULL,
-            notes TEXT
+            notes TEXT NOT NULL,
+            receipt_path TEXT
           )
         ''');
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute(
+            'ALTER TABLE $_tableName ADD COLUMN receipt_path TEXT',
+          );
+        }
       },
     );
 
