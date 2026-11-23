@@ -37,10 +37,13 @@ class _NavigationScreenState extends State<NavigationScreen> {
   final GlobalKey<TransactionScreenState> _transactionScreenKey =
       GlobalKey<TransactionScreenState>();
 
+  final GlobalKey<StatisticsScreenState> _statisticsScreenKey =
+      GlobalKey<StatisticsScreenState>();
+
   late final List<Widget> _screens = [
     HomeScreen(key: _homeScreenKey),
     TransactionScreen(key: _transactionScreenKey),
-    const StatisticsScreen(),
+    StatisticsScreen(key: _statisticsScreenKey),
     const SettingsScreen(),
   ];
 
@@ -78,8 +81,12 @@ class _NavigationScreenState extends State<NavigationScreen> {
       _selectedIndex = index;
     });
 
-    if (index == 1) {
+    if (index == 0) {
+      _homeScreenKey.currentState?.reloadRecentTransactions();
+    } else if (index == 1) {
       _transactionScreenKey.currentState?.reload();
+    } else if (index == 2) {
+      _statisticsScreenKey.currentState?.reload();
     }
   }
 
