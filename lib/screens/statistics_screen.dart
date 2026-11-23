@@ -414,7 +414,7 @@ class StatisticsScreenState extends State<StatisticsScreen> {
                                 toY: totals[index] / 100,
                                 width: 12,
                                 color: _showIncome ? Colors.green : Colors.red,
-                                borderRadius: BorderRadius.circular(5),
+                                borderRadius: BorderRadius.zero,
                               ),
                             ],
                           ),
