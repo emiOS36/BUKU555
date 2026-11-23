@@ -124,23 +124,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (!mounted) return;
 
       if (missingReceiptCount == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('No transactions to export yet.'),
-          ),
-        );
-      } else if (missingReceiptCount > 0) {
-        final receiptWord = missingReceiptCount == 1
-            ? 'receipt image was'
-            : 'receipt images were';
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              '$missingReceiptCount $receiptWord missing from the export.',
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            const SnackBar(
+              content: Text('No transactions to export yet.'),
             ),
-          ),
-        );
+          );
+      } else {
+        final message = missingReceiptCount == 0
+            ? 'Export file is ready.'
+            : missingReceiptCount == 1
+            ? 'Export file is ready. 1 receipt image was missing.'
+            : 'Export file is ready. $missingReceiptCount receipt images were missing.';
+
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(content: Text(message)),
+          );
       }
     } catch (error) {
       debugPrint('Could not export transactions: $error');

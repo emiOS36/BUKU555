@@ -157,49 +157,88 @@ class TransactionScreenState extends State<TransactionScreen> {
       context: context,
       builder: (dialogContext) {
         final colors = Theme.of(dialogContext).colorScheme;
+        final isIncome = transaction.type == TransactionType.income;
+        final category = _findCategory(transaction.category);
+        final note = transaction.notes?.trim();
 
         return AlertDialog(
-          title: Text(
-            'Delete “${transaction.description}”?',
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28),
           ),
-          titlePadding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
-          contentPadding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
-          actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          title: const Text('Delete transaction?'),
+          titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+          contentPadding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
+          actionsPadding: const EdgeInsets.fromLTRB(16, 12, 24, 20),
+          actionsAlignment: MainAxisAlignment.end,
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Wrap(
-                spacing: 6,
+              Row(
                 children: [
-                  CurrencyAmount(
-                    amountInCents: transaction.amountInCents,
-                    style: TextStyle(color: colors.onSurfaceVariant),
+                  CircleAvatar(
+                    radius: 24,
+                    backgroundColor: isIncome ? Colors.green : Colors.red,
+                    child: Icon(category.icon, color: Colors.white),
                   ),
-                  Text(
-                    '· ${transaction.category}',
-                    style: TextStyle(color: colors.onSurfaceVariant),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          transaction.description,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        if (note != null && note.isNotEmpty)
+                          Text(
+                            note,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(color: colors.onSurfaceVariant),
+                          ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: CurrencyAmount(
+                        amountInCents: transaction.amountInCents,
+                        prefix: isIncome ? '+' : '-',
+                        style: TextStyle(
+                          color: isIncome ? Colors.green[800] : Colors.red,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               Text(
-                "This can't be undone.",
+                "This action can't be undone.",
                 style: TextStyle(color: colors.onSurfaceVariant),
               ),
             ],
           ),
           actions: [
             TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: colors.primary,
+                minimumSize: const Size(80, 48),
+              ),
               onPressed: () => Navigator.pop(dialogContext, false),
               child: const Text('Cancel'),
             ),
-            FilledButton(
-              style: FilledButton.styleFrom(
-                backgroundColor: colors.error,
-                foregroundColor: colors.onError,
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: colors.error,
+                minimumSize: const Size(80, 48),
               ),
               onPressed: () => Navigator.pop(dialogContext, true),
               child: const Text('Delete'),
