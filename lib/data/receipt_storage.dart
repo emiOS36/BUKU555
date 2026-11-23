@@ -38,4 +38,39 @@ class ReceiptStorage {
     final file = await fileFor(relativePath);
     if (file != null) await file.delete();
   }
+
+  static Future<String> saveBytes(
+    List<int> bytes, {
+    required String extension,
+  }) async {
+    const allowedExtensions = {
+      '.jpg',
+      '.jpeg',
+      '.png',
+      '.webp',
+      '.heic',
+    };
+
+    final safeExtension = extension.toLowerCase();
+
+    if (!allowedExtensions.contains(safeExtension)) {
+      throw FormatException('Unsupported receipt image type: $extension');
+    }
+
+    final appDirectory = await getApplicationSupportDirectory();
+    final receiptDirectory = Directory(
+      p.join(appDirectory.path, 'receipts'),
+    );
+
+    await receiptDirectory.create(recursive: true);
+
+    final fileName =
+        'receipt_${DateTime.now().microsecondsSinceEpoch}$safeExtension';
+    final savedFile = File(p.join(receiptDirectory.path, fileName));
+
+    await savedFile.writeAsBytes(bytes, flush: true);
+
+    // Store an app-relative path in SQLite, just like save() does.
+    return p.join('receipts', fileName);
+  }
 }

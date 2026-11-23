@@ -2,6 +2,12 @@ import 'package:material_ui/material_ui.dart';
 import 'package:buku555/data/currency_preferences.dart';
 import 'package:buku555/data/transaction_database.dart';
 import 'package:buku555/models/app_currency.dart';
+import 'dart:ui' show Offset;
+
+import 'package:buku555/data/transaction_exporter.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:buku555/data/transaction_importer.dart';
+
 // import 'package:buku555/data/theme_preferences.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -103,6 +109,119 @@ class _SettingsScreenState extends State<SettingsScreen> {
   //   await ThemePreferences.instance.save(selectedMode);
   // }
 
+  Future<void> _exportTransactions() async {
+    try {
+      final renderObject = context.findRenderObject();
+
+      final sharePositionOrigin = renderObject is RenderBox
+          ? renderObject.localToGlobal(Offset.zero) & renderObject.size
+          : null;
+
+      final missingReceiptCount = await TransactionExporter.exportAll(
+        sharePositionOrigin: sharePositionOrigin,
+      );
+
+      if (!mounted) return;
+
+      if (missingReceiptCount == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No transactions to export yet.'),
+          ),
+        );
+      } else if (missingReceiptCount > 0) {
+        final receiptWord = missingReceiptCount == 1
+            ? 'receipt image was'
+            : 'receipt images were';
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '$missingReceiptCount $receiptWord missing from the export.',
+            ),
+          ),
+        );
+      }
+    } catch (error) {
+      debugPrint('Could not export transactions: $error');
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not export data. Please try again.'),
+        ),
+      );
+    }
+  }
+
+  Future<void> _importTransactions() async {
+    try {
+      final zipFile = await FilePicker.pickFile(
+        type: FileType.custom,
+        allowedExtensions: ['zip'],
+      );
+
+      if (zipFile == null || !mounted) return;
+
+      final prepared = await TransactionImporter.prepare(
+        await zipFile.readAsBytes(),
+      );
+
+      if (!mounted) return;
+
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Restore backup?'),
+          content: Text(
+            'This backup contains '
+            '${prepared.transactionCount} transactions and '
+            '${prepared.receiptCount} receipt images. '
+            'It will be restored into this empty ledger.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Restore'),
+            ),
+          ],
+        ),
+      );
+
+      if (confirmed != true || !mounted) return;
+
+      await TransactionImporter.importPrepared(prepared);
+
+      if (!mounted) return;
+
+      final missing = prepared.missingReceiptCount;
+      final message = missing == 0
+          ? 'Backup restored successfully.'
+          : 'Backup restored. $missing receipt image(s) were already missing.';
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    } catch (error) {
+      debugPrint('Could not import backup: $error');
+
+      if (!mounted) return;
+
+      final message = error is StateError
+          ? 'Import requires an empty transaction list to prevent duplicates.'
+          : 'Could not restore this backup. Check that it is a valid Buku555 ZIP.';
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -168,13 +287,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _SettingsSection(
               title: 'Data & Backup',
               rows: [
-                const _SettingsRow(
+                _SettingsRow(
                   icon: Icons.file_upload_outlined,
                   title: 'Export Data',
+                  onTap: _exportTransactions,
                 ),
-                const _SettingsRow(
+                _SettingsRow(
                   icon: Icons.file_download_outlined,
                   title: 'Import Data',
+                  onTap: _importTransactions,
                 ),
                 const _SettingsRow(
                   icon: Icons.cloud_outlined,

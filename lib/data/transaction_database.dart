@@ -159,4 +159,20 @@ class TransactionDatabase {
       whereArgs: [id],
     );
   }
+
+  //Import Data
+  Future<void> insertAll(List<Transaction> transactions) async {
+    final db = await database;
+
+    await db.transaction((txn) async {
+      final batch = txn.batch();
+
+      for (final transaction in transactions) {
+        // Imported rows have no ID, so SQLite assigns new IDs.
+        batch.insert(_tableName, transaction.toMap());
+      }
+
+      await batch.commit(noResult: true);
+    });
+  }
 }

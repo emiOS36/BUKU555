@@ -152,23 +152,61 @@ class TransactionScreenState extends State<TransactionScreen> {
     }
   }
 
-  Future<bool> _confirmDelete() async {
+  Future<bool> _confirmDelete(db_model.Transaction transaction) async {
     final shouldDelete = await showDialog<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Delete transaction?'),
-        content: const Text('This transaction will be permanently deleted.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Cancel'),
+      builder: (dialogContext) {
+        final colors = Theme.of(dialogContext).colorScheme;
+
+        return AlertDialog(
+          title: Text(
+            'Delete “${transaction.description}”?',
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Delete'),
+          titlePadding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
+          contentPadding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
+          actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Wrap(
+                spacing: 6,
+                children: [
+                  CurrencyAmount(
+                    amountInCents: transaction.amountInCents,
+                    style: TextStyle(color: colors.onSurfaceVariant),
+                  ),
+                  Text(
+                    '· ${transaction.category}',
+                    style: TextStyle(color: colors.onSurfaceVariant),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                "This can't be undone.",
+                style: TextStyle(color: colors.onSurfaceVariant),
+              ),
+            ],
           ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: colors.error,
+                foregroundColor: colors.onError,
+              ),
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
     );
 
     return shouldDelete ?? false;
@@ -482,12 +520,15 @@ class TransactionScreenState extends State<TransactionScreen> {
         padding: const EdgeInsets.only(right: 20),
         margin: const EdgeInsets.only(bottom: 8),
         decoration: BoxDecoration(
-          color: Colors.red,
+          color: Theme.of(context).colorScheme.errorContainer,
           borderRadius: BorderRadius.circular(14),
         ),
-        child: const Icon(Icons.delete, color: Colors.white),
+        child: Icon(
+          Icons.delete_outline,
+          color: Theme.of(context).colorScheme.onErrorContainer,
+        ),
       ),
-      confirmDismiss: (_) => _confirmDelete(),
+      confirmDismiss: (_) => _confirmDelete(transaction),
       onDismissed: (_) => _deleteTransaction(transaction),
       child: Card(
         margin: const EdgeInsets.only(bottom: 8),
