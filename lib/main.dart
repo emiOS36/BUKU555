@@ -1,6 +1,7 @@
 import 'package:buku555/screens/navigation_screen.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:buku555/data/currency_preferences.dart';
+import 'package:buku555/screens/login_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,7 +30,7 @@ class Buku555 extends StatelessWidget {
         ),
         scaffoldBackgroundColor: const Color(0xFFF3F6F4),
       ),
-      home: const NavigationScreen(),
+      home: const LoginScreen(),
     );
   }
 }
