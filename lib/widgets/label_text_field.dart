@@ -29,21 +29,12 @@ class LabelTextField extends StatelessWidget {
           keyboardType: keyboardType,
           style: TextStyle(fontSize: 15),
           decoration: InputDecoration(
-            filled: true,
-            fillColor: Color.fromARGB(255, 245, 246, 248),
             hintText: hintText,
             suffixIcon: IconButton(
               onPressed: () {
                 controller.clear();
               },
               icon: Icon(Icons.clear),
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 14,
             ),
           ),
         ),

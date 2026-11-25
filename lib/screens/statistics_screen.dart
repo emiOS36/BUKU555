@@ -629,12 +629,6 @@ class StatisticsScreenState extends State<StatisticsScreen> {
     final totals = _chartTotals;
     final chartValues = totals.map((amount) => amount / 100).toList();
     final chartMax = _chartMaximum(chartValues);
-    final range = _periodRange;
-    final daysInMonth = DateTime(
-      range.start.year,
-      range.start.month + 1,
-      0,
-    ).day;
 
     return _StatisticsCard(
       child: Column(

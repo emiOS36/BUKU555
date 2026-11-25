@@ -184,8 +184,8 @@ class _NavigationScreenState extends State<NavigationScreen> {
         dimension: 46,
         child: FloatingActionButton(
           shape: const CircleBorder(),
-          foregroundColor: Colors.black54,
-          backgroundColor: Colors.teal[100],
+          foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
+          backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
           onPressed: _openAddTransactionScreen,
           child: const Icon(Icons.add, size: 32),
         ),
