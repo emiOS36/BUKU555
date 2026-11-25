@@ -79,13 +79,15 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   InputDecoration _fieldDecoration({
-    required String hint,
+    required String label,
+    String? hint,
+    required IconData prefixIcon,
     Widget? suffixIcon,
   }) {
-    final colors = Theme.of(context).colorScheme;
-
     return InputDecoration(
+      labelText: label,
       hintText: hint,
+      prefixIcon: Icon(prefixIcon),
       suffixIcon: suffixIcon,
     );
   }
@@ -149,8 +151,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 36),
 
-              _fieldLabel('Email'),
-              const SizedBox(height: 8),
               TextField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
@@ -159,19 +159,22 @@ class _LoginScreenState extends State<LoginScreen> {
                   AutofillHints.username,
                   AutofillHints.email,
                 ],
-                decoration: _fieldDecoration(hint: 'Email address'),
+                decoration: _fieldDecoration(
+                  label: 'Email',
+                  hint: 'name@example.com',
+                  prefixIcon: Icons.email_outlined,
+                ),
               ),
               const SizedBox(height: 24),
 
-              _fieldLabel('Password'),
-              const SizedBox(height: 8),
               TextField(
                 controller: _passwordController,
                 obscureText: _hidePassword,
                 textInputAction: .done,
                 autofillHints: const [AutofillHints.password],
                 decoration: _fieldDecoration(
-                  hint: 'Password',
+                  label: 'Password',
+                  prefixIcon: Icons.lock_outline,
                   suffixIcon: IconButton(
                     tooltip: _hidePassword ? 'Show password' : 'Hide password',
                     onPressed: () {
@@ -182,7 +185,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     icon: Icon(
                       _hidePassword
                           ? Icons.visibility_off_outlined
-                          : Icons.visibility_off_outlined,
+                          : Icons.visibility_outlined,
                     ),
                   ),
                 ),
