@@ -37,26 +37,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       hintText: hint,
       helperText: helperText,
       suffixIcon: suffixIcon,
-      filled: true,
-      fillColor: Colors.white,
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 18,
-        vertical: 18,
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(
-          color: Color(0xFF9ADBD2),
-          width: 1,
-        ),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(
-          color: colors.primary,
-          width: 1.5,
-        ),
-      ),
     );
   }
 
@@ -85,7 +65,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
             child: Icon(
               isMet ? Icons.check : Icons.circle_outlined,
               size: 18,
-              color: isMet ? const Color(0xFF008577) : textColor,
+              color: isMet ? Theme.of(context).colorScheme.primary : textColor,
             ),
           ),
           const SizedBox(width: 10),
@@ -179,7 +159,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     final hasNumberAndSymbol = hasNumber && hasSymbol;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF3F6F4),
       body: SafeArea(
         child: SingleChildScrollView(
           keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
@@ -326,8 +305,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 height: 56,
                 child: FilledButton(
                   style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF008577),
-                    foregroundColor: Colors.white,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),

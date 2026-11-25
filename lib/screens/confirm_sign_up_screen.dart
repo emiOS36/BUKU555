@@ -127,7 +127,7 @@ class _ConfirmSignUpScreenState extends State<ConfirmSignUpScreen> {
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
                               color: isActiveBox
-                                  ? const Color(0xFF008577)
+                                  ? Theme.of(context).colorScheme.primary
                                   : const Color(0xFFB8C4C0),
                               width: isActiveBox ? 2 : 1,
                             ),
@@ -179,11 +179,9 @@ class _ConfirmSignUpScreenState extends State<ConfirmSignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF3F6F4),
       appBar: AppBar(
         centerTitle: true,
         title: const Text('Verify email'),
-        backgroundColor: const Color(0xFFF3F6F4),
         surfaceTintColor: Colors.transparent,
         elevation: 0,
       ),
@@ -201,7 +199,7 @@ class _ConfirmSignUpScreenState extends State<ConfirmSignUpScreen> {
                     color: Color(0xFFDDF5ED),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.mail_outline,
                     size: 52,
                     color: Color(0xFF008577),
@@ -243,8 +241,8 @@ class _ConfirmSignUpScreenState extends State<ConfirmSignUpScreen> {
                 child: FilledButton(
                   onPressed: _isConfirming ? null : _confirmCode,
                   style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF008577),
-                    foregroundColor: Colors.white,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
@@ -267,8 +265,8 @@ class _ConfirmSignUpScreenState extends State<ConfirmSignUpScreen> {
                 onPressed: _isResending ? null : _resendCode,
                 child: Text(
                   _isResending ? 'Sending code…' : 'Resend code',
-                  style: const TextStyle(
-                    color: Color(0xFF008577),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
               ),

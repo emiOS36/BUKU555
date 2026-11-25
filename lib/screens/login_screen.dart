@@ -87,26 +87,6 @@ class _LoginScreenState extends State<LoginScreen> {
     return InputDecoration(
       hintText: hint,
       suffixIcon: suffixIcon,
-      filled: true,
-      fillColor: Colors.white,
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 18,
-        vertical: 18,
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: .circular(14),
-        borderSide: const BorderSide(
-          color: Color(0xFF9ADBD2),
-          width: 1,
-        ),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: .circular(14),
-        borderSide: BorderSide(
-          color: colors.primary,
-          width: 1.5,
-        ),
-      ),
     );
   }
 
@@ -124,7 +104,6 @@ class _LoginScreenState extends State<LoginScreen> {
     final colors = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF3F6F4),
       body: SafeArea(
         child: SingleChildScrollView(
           keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
@@ -226,8 +205,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 height: 56,
                 child: FilledButton(
                   style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF008577),
-                    foregroundColor: Colors.white,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     shape: RoundedRectangleBorder(
                       borderRadius: .circular(14),
                     ),
