@@ -1,5 +1,7 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:flutter/widgets.dart';
+import 'package:amplify_flutter/amplify_flutter.dart';
+import 'package:buku555/screens/navigation_screen.dart';
+import 'package:buku555/screens/create_account_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -13,6 +15,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
 
   bool _hidePassword = true;
+  bool _isSigningIn = false;
 
   @override
   void dispose() {
@@ -27,6 +30,52 @@ class _LoginScreenState extends State<LoginScreen> {
       ..showSnackBar(
         SnackBar(content: Text(message)),
       );
+  }
+
+  Future<void> _signIn() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    if (email.isEmpty || password.isEmpty) {
+      _showPlaceHolderMessage('Enter your email and password.');
+      return;
+    }
+
+    setState(() {
+      _isSigningIn = true;
+    });
+
+    try {
+      final result = await Amplify.Auth.signIn(
+        username: email,
+        password: password,
+      );
+
+      if (!mounted) return;
+
+      if (result.isSignedIn) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute<void>(
+            builder: (_) => const NavigationScreen(),
+          ),
+          (route) => false,
+        );
+      } else {
+        _showPlaceHolderMessage(
+          'More verification is needed to finish signing in.',
+        );
+      }
+    } on AuthException catch (error) {
+      if (!mounted) return;
+
+      _showPlaceHolderMessage(error.message);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSigningIn = false;
+        });
+      }
+    }
   }
 
   InputDecoration _fieldDecoration({
@@ -111,7 +160,15 @@ class _LoginScreenState extends State<LoginScreen> {
                   color: colors.onSurface,
                 ),
               ),
-              const SizedBox(height: 48),
+              const SizedBox(height: 2),
+              Text(
+                'Sign in to your Buku555 account.',
+                textAlign: .center,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: colors.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 36),
 
               _fieldLabel('Email'),
               const SizedBox(height: 8),
@@ -175,18 +232,23 @@ class _LoginScreenState extends State<LoginScreen> {
                       borderRadius: .circular(14),
                     ),
                   ),
-                  onPressed: () {
-                    _showPlaceHolderMessage(
-                      'Sign-in will work after Congnito is connected.',
-                    );
-                  },
-                  child: const Text(
-                    'Sign in',
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: .w600,
-                    ),
-                  ),
+                  onPressed: _isSigningIn ? null : _signIn,
+                  child: _isSigningIn
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text(
+                          'Sign in',
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: .w600,
+                          ),
+                        ),
                 ),
               ),
               const SizedBox(height: 20),
@@ -198,8 +260,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   const Text('New to Buku555?'),
                   TextButton(
                     onPressed: () {
-                      _showPlaceHolderMessage(
-                        'Account creation will be connected to Cognito later.',
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const CreateAccountScreen(),
+                        ),
                       );
                     },
                     child: const Text('Create acccount'),

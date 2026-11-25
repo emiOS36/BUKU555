@@ -2,8 +2,9 @@ import 'package:material_ui/material_ui.dart';
 import 'package:buku555/data/currency_preferences.dart';
 import 'package:buku555/data/transaction_database.dart';
 import 'package:buku555/models/app_currency.dart';
-import 'dart:ui' show Offset;
-
+import 'package:amplify_flutter/amplify_flutter.dart';
+import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
+import 'package:buku555/screens/login_screen.dart';
 import 'package:buku555/data/transaction_exporter.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:buku555/data/transaction_importer.dart';
@@ -19,6 +20,7 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   // final bool _notificationEnable = true;
+  bool _isSigningOut = false;
 
   Future<void> _chooseCurrency() async {
     final transactions = await TransactionDatabase.instance.getAll();
@@ -224,6 +226,87 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  void _showSettingsMessage(String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+  }
+
+  Future<void> _confirmAndSignOut() async {
+    if (_isSigningOut) return;
+
+    final shouldSignOut = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Sign out?'),
+          content: const Text(
+            'You’ll need to sign in again to access your account.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: Theme.of(dialogContext).colorScheme.error,
+              ),
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Sign out'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldSignOut != true || !mounted) return;
+
+    setState(() {
+      _isSigningOut = true;
+    });
+
+    try {
+      final result = await Amplify.Auth.signOut();
+
+      if (!mounted) return;
+
+      if (result is CognitoCompleteSignOut) {
+        Navigator.of(context, rootNavigator: true).pushAndRemoveUntil<void>(
+          MaterialPageRoute<void>(
+            builder: (_) => const LoginScreen(),
+          ),
+          (route) => false,
+        );
+      } else if (result is CognitoFailedSignOut) {
+        debugPrint('Cognito sign-out failed: ${result.exception.message}');
+        _showSettingsMessage('Could not sign out. Please try again.');
+      } else {
+        _showSettingsMessage('Could not complete sign out. Please try again.');
+      }
+    } on AuthException catch (error) {
+      debugPrint('Sign-out error: ${error.message}');
+
+      if (mounted) {
+        _showSettingsMessage('Could not sign out. Please try again.');
+      }
+    } catch (error) {
+      debugPrint('Unexpected sign-out error: $error');
+
+      if (mounted) {
+        _showSettingsMessage('Could not sign out. Please try again.');
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSigningOut = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -339,6 +422,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 //   title: 'Terms of Service',
                 // ),
               ],
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: _isSigningOut ? null : _confirmAndSignOut,
+                icon: _isSigningOut
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.logout),
+                label: Text(_isSigningOut ? 'Signing out…' : 'Sign out'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Theme.of(context).colorScheme.error,
+                  backgroundColor: Colors.white,
+                  side: BorderSide(
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                  minimumSize: const Size.fromHeight(54),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                ),
+              ),
             ),
           ],
         ),
