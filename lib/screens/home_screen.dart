@@ -313,6 +313,7 @@ class _RecentTransactionRow extends StatelessWidget {
     return SizedBox(
       height: 72,
       child: Row(
+        crossAxisAlignment: .center,
         children: [
           CircleAvatar(
             radius: 25,
@@ -336,7 +337,14 @@ class _RecentTransactionRow extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${transaction.notes} • ${_formatDate(transaction.date)}',
+                  '${transaction.notes}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _formatDate(transaction.date),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontSize: 13, color: Colors.grey[700]),

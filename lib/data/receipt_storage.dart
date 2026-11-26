@@ -73,4 +73,15 @@ class ReceiptStorage {
     // Store an app-relative path in SQLite, just like save() does.
     return p.join('receipts', fileName);
   }
+
+  static Future<void> deleteAll() async {
+    final appDirectory = await getApplicationSupportDirectory();
+    final receiptDirectory = Directory(
+      p.join(appDirectory.path, 'receipts'),
+    );
+
+    if (await receiptDirectory.exists()) {
+      await receiptDirectory.delete(recursive: true);
+    }
+  }
 }

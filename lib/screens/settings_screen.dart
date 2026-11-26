@@ -8,6 +8,7 @@ import 'package:buku555/screens/login_screen.dart';
 import 'package:buku555/data/transaction_exporter.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:buku555/data/transaction_importer.dart';
+import 'package:buku555/data/receipt_storage.dart';
 
 // import 'package:buku555/data/theme_preferences.dart';
 
@@ -21,6 +22,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   // final bool _notificationEnable = true;
   bool _isSigningOut = false;
+  bool _isResettingLocalData = false;
 
   Future<void> _chooseCurrency() async {
     final transactions = await TransactionDatabase.instance.getAll();
@@ -307,6 +309,62 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  Future<void> _confirmAndResetLocalData() async {
+    if (_isResettingLocalData) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Reset data?'),
+        content: const Text(
+          'This permanently deletes all transactions and receipt images. '
+          'Your account and currency setting will remain.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(dialogContext).colorScheme.error,
+            ),
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Reset'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    setState(() {
+      _isResettingLocalData = true;
+    });
+
+    try {
+      await TransactionDatabase.instance.clearAllTransactions();
+      await ReceiptStorage.deleteAll();
+
+      if (!mounted) return;
+      _showSettingsMessage('App transactions and receipts were deleted.');
+    } catch (error, stackTrace) {
+      debugPrint('Could not reset app data: $error');
+      debugPrintStack(stackTrace: stackTrace);
+
+      if (!mounted) return;
+      _showSettingsMessage(
+        'Could not finish resetting app data. Some receipt files may remain.',
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isResettingLocalData = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -323,7 +381,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
           children: [
             _SettingsSection(
-              title: 'Account & App',
+              title: 'App',
               rows: [
                 ValueListenableBuilder<AppCurrency>(
                   valueListenable: CurrencyPreferences.instance.current,
@@ -387,23 +445,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   title: 'Cloud Sync',
                   value: 'Off',
                 ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            _SettingsSection(
-              title: 'Support',
-              rows: [
-                const _SettingsRow(
-                  icon: Icons.help_outline,
-                  title: 'Help',
-                ),
-                const _SettingsRow(
-                  icon: Icons.mail_outline,
-                  title: 'Feedback',
+                _SettingsRow(
+                  icon: Icons.delete_outline,
+                  title: 'Reset Data',
+                  onTap: _confirmAndResetLocalData,
+                  isDestructive: true,
                 ),
               ],
             ),
             const SizedBox(height: 24),
+
+            // _SettingsSection(
+            //   title: 'Support',
+            //   rows: [
+            //     const _SettingsRow(
+            //       icon: Icons.help_outline,
+            //       title: 'Help',
+            //     ),
+            //     const _SettingsRow(
+            //       icon: Icons.mail_outline,
+            //       title: 'Feedback',
+            //     ),
+            //   ],
+            // ),
+            // const SizedBox(height: 24),
             _SettingsSection(
               title: 'About',
               rows: [
@@ -509,6 +574,7 @@ class _SettingsRow extends StatelessWidget {
     this.trailing,
     this.showChevron = true,
     this.onTap,
+    this.isDestructive = false,
   });
 
   final IconData icon;
@@ -517,9 +583,11 @@ class _SettingsRow extends StatelessWidget {
   final Widget? trailing;
   final bool showChevron;
   final VoidCallback? onTap;
+  final bool isDestructive;
 
   @override
   Widget build(BuildContext context) {
+    final rowColor = isDestructive ? Theme.of(context).colorScheme.error : null;
     return InkWell(
       onTap: onTap,
       child: SizedBox(
@@ -528,12 +596,12 @@ class _SettingsRow extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
-              Icon(icon, size: 22),
+              Icon(icon, size: 22, color: rowColor),
               const SizedBox(width: 14),
               Expanded(
                 child: Text(
                   title,
-                  style: const TextStyle(fontSize: 16),
+                  style: TextStyle(fontSize: 16, color: rowColor),
                 ),
               ),
               if (value != null) ...[

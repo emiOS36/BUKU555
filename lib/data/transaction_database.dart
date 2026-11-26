@@ -175,4 +175,10 @@ class TransactionDatabase {
       await batch.commit(noResult: true);
     });
   }
+
+  //Reset App Data
+  Future<void> clearAllTransactions() async {
+    final db = await database;
+    await db.delete(_tableName);
+  }
 }
